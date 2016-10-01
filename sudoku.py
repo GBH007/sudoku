@@ -3,13 +3,37 @@
 #           Gregoriy Nikonirov
 # email:    mrgbh007@gmail.com
 #
-import copy
-import time
-num_set=set((1,2,3,4,5,6,7,8,9))
+
+class SQueue:
+	def __init__(self,su):
+		self.sudoku=su
+		self.stack=[]
+	def add(self,data,l):
+		self.stack.append((l,data))
+	def set(self):
+		l,data=self.stack[-1]
+		if l==0:
+			self.sudoku.set(data[0],data[1],data[2])
+		elif l==1:
+			self.sudoku.set(data[0][0],data[0][1],data[0][2])
+	def unset(self):
+		l,data=self.stack[-1]
+		if l==0:
+			self.sudoku.unset(data[0],data[1])
+			self.stack.pop()
+		elif l==1:
+			self.sudoku.unset(data[0][0],data[0][1])
+			self.stack[-1][1].pop(0)
+			if len(self.stack[-1][1])==0:
+				self.stack.pop()
+				l=0
+		return l
+	def __len__(self):
+		return len(self.stack)
+
 class Sudoku:
 	def __init__(self,m=None):
 		self.m=m if m else [[0 for j in range(9)]for i in range(9)]
-		#hash number
 		self.hn=[]
 		self.rows_on_set=[[1 for i1 in range(10)] for i in range(9)]
 		self.cols_on_set=[[1 for i1 in range(10)] for i in range(9)]
@@ -21,14 +45,12 @@ class Sudoku:
 
 	def precalc(self):
 		self.hn=self._getHashNum()
-		
 		for i in range(9):
 			self.rows_on_set[i]=self._noIncOnRow(i)
 			self.cols_on_set[i]=self._noIncOnCol(i)
 		for i in range(3):
 			for j in range(3):
 				self.squs_on_set[i*3+j]=self._noIncOnSquare(i,j)
-				
 		for i in range(1,10):
 			self.vp[i]=self._getVarPos(i)
 			
@@ -116,6 +138,10 @@ class Sudoku:
 		if self.hn[0]:
 			return False
 		return True
+				
+	def getVarPosAndN(self,num):
+		vp=[(i,j,num) for i,j in self.vp[num] if self.noIncOnCellNum(i,j,num)]
+		return vp
 		
 	def getVarPos(self,num):
 		vp=[(i,j) for i,j in self.vp[num] if self.noIncOnCellNum(i,j,num)]
