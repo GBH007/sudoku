@@ -11,22 +11,24 @@ class Sudoku:
 		self.m=m if m else [[0 for j in range(9)]for i in range(9)]
 		#hash number
 		self.hn=[]
-		self.rows_on_set=[set() for i in range(9)]
-		self.cols_on_set=[set() for i in range(9)]
-		self.squs_on_set=[set() for i in range(9)]
-		self.vp={i:[] for i in range(1,10)}
+		self.rows_on_set=[[1 for i1 in range(10)] for i in range(9)]
+		self.cols_on_set=[[1 for i1 in range(10)] for i in range(9)]
+		self.squs_on_set=[[1 for i1 in range(10)] for i in range(9)]
+		self.vp=[[] for i in range(10)]
 		self.precalc()
 		
 	#precalc block
 
 	def precalc(self):
 		self.hn=self._getHashNum()
+		
 		for i in range(9):
 			self.rows_on_set[i]=self._noIncOnRow(i)
 			self.cols_on_set[i]=self._noIncOnCol(i)
 		for i in range(3):
 			for j in range(3):
 				self.squs_on_set[i*3+j]=self._noIncOnSquare(i,j)
+				
 		for i in range(1,10):
 			self.vp[i]=self._getVarPos(i)
 			
@@ -38,23 +40,23 @@ class Sudoku:
 		return hs
 		
 	def _noIncOnRow(self,row):
-		on_set=set()
+		on_set=[1 for i in range(10)]
 		for i in self.m[row]:
-			on_set.add(i)
-		return num_set-on_set
+			on_set[i]=0
+		return on_set
 		
 	def _noIncOnCol(self,col):
-		on_set=set()
+		on_set=[1 for i in range(10)]
 		for i in self.m:
-			on_set.add(i[col])
-		return num_set-on_set
+			on_set[i[col]]=0
+		return on_set
 		
 	def _noIncOnSquare(self,srow,scol):
-		on_set=set()
+		on_set=[1 for i in range(10)]
 		for i in range(3):
 			for j in range(3):
-				on_set.add(self.m[srow*3+i][scol*3+j])
-		return num_set-on_set
+				on_set[self.m[srow*3+i][scol*3+j]]=0
+		return on_set
 		
 	def _getVarPos(self,num):
 		l=[]
@@ -65,15 +67,7 @@ class Sudoku:
 		return l
 		
 	#not used
-	
-	def noIncOnCell(self,row,col):
-		if self.m[row][col]:
-			return set()
-		on_set=num_set&self.noIncOnSquare(row//3,col//3)
-		on_set&=self.noIncOnRow(row)
-		on_set&=self.noIncOnCol(col)
-		return on_set
-		
+			
 	def ok(self):
 		rows=[{i:0 for i in range(10)}for j in range(9)]
 		cols=[{i:0 for i in range(10)}for j in range(9)]
@@ -91,29 +85,16 @@ class Sudoku:
 		return True
 	
 	#main block	
-	
-	def noIncOnRow(self,row):
-		return self.rows_on_set[row]
-		
-	def noIncOnCol(self,col):
-		return self.cols_on_set[col]
-		
-	def noIncOnSquare(self,srow,scol):
-		return self.squs_on_set[srow*3+scol]
-		
+				
 	def noIncOnCellNum(self,row,col,num):
 		if self.m[row][col]:
 			return False
-		return (num in self.noIncOnSquare(row//3,col//3))&(num in self.noIncOnRow(row))&(num in self.noIncOnCol(col))
-		
-	def getHashNum(self):
-		return self.hn
-		
+		return self.rows_on_set[row][num]&self.cols_on_set[col][num]&self.squs_on_set[(row//3)*3+col//3][num]
+				
 	def getMinLostCountNum(self):
-		hn=self.getHashNum()
 		ans=None
 		c=-1
-		for i,e in enumerate(hn):
+		for i,e in enumerate(self.hn):
 			if i and (c<e<9):
 				ans=i
 				c=e
@@ -132,8 +113,7 @@ class Sudoku:
 		return '\n'.join([' '.join([str(i)for i in l])for l in self.m])
 		
 	def complete(self):
-		hn=self.getHashNum()
-		if hn[0]:
+		if self.hn[0]:
 			return False
 		return True
 		
@@ -142,18 +122,18 @@ class Sudoku:
 		return vp
 		
 	def set(self,row,col,val):
-		self.rows_on_set[row].remove(val)
-		self.cols_on_set[col].remove(val)
-		self.squs_on_set[(row//3)*3+col//3].remove(val)
+		self.rows_on_set[row][val]=0
+		self.cols_on_set[col][val]=0
+		self.squs_on_set[(row//3)*3+col//3][val]=0
 		self.hn[val]+=1
 		self.hn[0]-=1
 		self.m[row][col]=val
 		
 	def unset(self,row,col):
 		val=self.m[row][col]
-		self.rows_on_set[row].add(val)
-		self.cols_on_set[col].add(val)
-		self.squs_on_set[(row//3)*3+col//3].add(val)
+		self.rows_on_set[row][val]=1
+		self.cols_on_set[col][val]=1
+		self.squs_on_set[(row//3)*3+col//3][val]=1
 		self.hn[val]-=1
 		self.hn[0]+=1
 		self.m[row][col]=0
