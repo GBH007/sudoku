@@ -5,7 +5,7 @@
 #
 from sudoku import Sudoku
 #~ from functions import SQueue
-from strategy import Strategys,RecursiveStrategys
+from strategy import Strategys
 import time
 
 def fls(fname):
