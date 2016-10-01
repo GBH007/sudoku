@@ -9,6 +9,7 @@ from functions import get_miid,SQueue
 class Strategy:
 	def __init__(self,su):
 		self.su=su
+		self.counter=0
 	def getEff(self):
 		#возврашает количество вариантов хода по стратегии (чем меньше тем лчше, если =<0 то стратегия не работает)
 		pass
@@ -17,29 +18,50 @@ class Strategy:
 		pass
 	def getDataToQueue(self):
 		#возврашает варианты хода 0-*
+		self.counter+=1
 		return self.su.getVarPosAndN(self.n)
 	
 class MaxPlaceCountStrategy(Strategy):
+	name='MaxPlaceCountStrategy'
 	def getEff(self):
 		return self.eff
 	def getFastEff(self):
 		self.n=self.su.getMinLostCountNum()
 		self.eff=9-self.su.hn[self.n] if self.n else 0
 		return self.eff
+	#~ def getDataToQueue(self):
+		#~ self.counter+=1
+		#~ Strategy.getDataToQueue(self)
 		
 class MinLostVarCountStrategy(Strategy):
+	name='MinLostVarCountStrategy'
 	def getFastEff(self):
 		self.n=self.su.getMinPlaceCountNum()
 		return self.su.hvn[self.n] if self.n>0 else self.n
 	def getEff(self):
 		self.n=self.su._getMinPlaceCountNum()
 		return self.su.hvn[self.n] if self.n>0 else self.n
-	
+	#~ def getDataToQueue(self):
+		#~ self.counter+=1
+		#~ Strategy.getDataToQueue(self)
+		
+class MinCellPlaceStrategy(Strategy):
+	name='MinCellPlaceStrategy'
+	def getEff(self):
+		return self.su._getCountVarNumInCell(self.i)
+	def getFastEff(self):
+		n,i=self.su.getCountVarNumInCell()
+		self.i=i
+		return n
+	def getDataToQueue(self):
+		self.counter+=1
+		return self.su.getCellPosAndN(self.i)
 
 
 _ALL_STRATEGYS=[
-	MaxPlaceCountStrategy,
+	#~ MaxPlaceCountStrategy,
 	MinLostVarCountStrategy,
+	MinCellPlaceStrategy,
 ]
 
 
@@ -75,4 +97,7 @@ class Strategys:
 			else:
 				self.sq.add(l,1)
 			self.sq.set()
+	
+	def __str__(self):
+		return '\n'.join(['{0.name}  {0.counter}'.format(i) for i in self.st])
 
