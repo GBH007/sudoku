@@ -10,35 +10,17 @@ class Sudoku:
 	def __init__(self,m=None):
 		self.m=m if m else [[0 for j in range(9)]for i in range(9)]
 		#hash number
-		self.hn={}
+		self.hn=[]
 		self.rows_on_set=[set() for i in range(9)]
 		self.cols_on_set=[set() for i in range(9)]
 		self.squs_on_set=[set() for i in range(9)]
 		self.vp={i:[] for i in range(1,10)}
 		self.precalc()
-	def noIncOnRow(self,row):
-		return self.rows_on_set[row]
-	def _noIncOnRow(self,row):
-		on_set=set()
-		for i in self.m[row]:
-			on_set.add(i)
-		return num_set-on_set
-	def noIncOnCol(self,col):
-		return self.cols_on_set[col]
-	def _noIncOnCol(self,col):
-		on_set=set()
-		for i in self.m:
-			on_set.add(i[col])
-		return num_set-on_set
-	def noIncOnSquare(self,srow,scol):
-		return self.squs_on_set[srow*3+scol]
-	def _noIncOnSquare(self,srow,scol):
-		on_set=set()
-		for i in range(3):
-			for j in range(3):
-				on_set.add(self.m[srow*3+i][scol*3+j])
-		return num_set-on_set
+		
+	#precalc block
+
 	def precalc(self):
+		self.hn=self._getHashNum()
 		for i in range(9):
 			self.rows_on_set[i]=self._noIncOnRow(i)
 			self.cols_on_set[i]=self._noIncOnCol(i)
@@ -47,10 +29,43 @@ class Sudoku:
 				self.squs_on_set[i*3+j]=self._noIncOnSquare(i,j)
 		for i in range(1,10):
 			self.vp[i]=self._getVarPos(i)
-	def noIncOnCellNum(self,row,col,num):
-		if self.m[row][col]:
-			return False
-		return (num in self.noIncOnSquare(row//3,col//3))&(num in self.noIncOnRow(row))&(num in self.noIncOnCol(col))
+			
+	def _getHashNum(self):
+		hs=[0 for i in range(10)]
+		for l in self.m:
+			for i in l:
+				hs[i]+=1
+		return hs
+		
+	def _noIncOnRow(self,row):
+		on_set=set()
+		for i in self.m[row]:
+			on_set.add(i)
+		return num_set-on_set
+		
+	def _noIncOnCol(self,col):
+		on_set=set()
+		for i in self.m:
+			on_set.add(i[col])
+		return num_set-on_set
+		
+	def _noIncOnSquare(self,srow,scol):
+		on_set=set()
+		for i in range(3):
+			for j in range(3):
+				on_set.add(self.m[srow*3+i][scol*3+j])
+		return num_set-on_set
+		
+	def _getVarPos(self,num):
+		l=[]
+		for i in range(9):
+			for j in range(9):
+				if self.noIncOnCellNum(i,j,num):
+					l.append((i,j))
+		return l
+		
+	#not used
+	
 	def noIncOnCell(self,row,col):
 		if self.m[row][col]:
 			return set()
@@ -58,41 +73,7 @@ class Sudoku:
 		on_set&=self.noIncOnRow(row)
 		on_set&=self.noIncOnCol(col)
 		return on_set
-	def getHashNum(self):
-		if not self.hn:
-			self.hn=self._getHashNum()
-		return self.hn
-	def _getHashNum(self):
-		hs={i:0 for i in range(10)}
-		for l in self.m:
-			for i in l:
-				hs[i]+=1
-		return hs
-	def getMinLostCountNum(self):
-		hn=self.getHashNum()
-		ans=None
-		c=-1
-		for i in hn:
-			if i and (c<hn[i]<9):
-				ans=i
-				c=hn[i]
-		return ans
-	def getHashStr(self):
-		return ''.join([''.join([str(i)for i in l])for l in self.m])
-	def setOnHashStr(self,hs):
-		for i in range(9):
-			for j in range(9):
-				self.m[i][j]=int(hs[i*9+j])
-				
-		self.precalc()
-	def __str__(self):
-		return '\n'.join([' '.join([str(i)for i in l])for l in self.m])
-	def complete(self):
-		hn=self.getHashNum()
-		#~ print(hn)
-		if hn[0]:
-			return False
-		return True
+		
 	def ok(self):
 		rows=[{i:0 for i in range(10)}for j in range(9)]
 		cols=[{i:0 for i in range(10)}for j in range(9)]
@@ -108,16 +89,58 @@ class Sudoku:
 				if cols[i][j]>1:return False
 				if squs[i][j]>1:return False
 		return True
+	
+	#main block	
+	
+	def noIncOnRow(self,row):
+		return self.rows_on_set[row]
+		
+	def noIncOnCol(self,col):
+		return self.cols_on_set[col]
+		
+	def noIncOnSquare(self,srow,scol):
+		return self.squs_on_set[srow*3+scol]
+		
+	def noIncOnCellNum(self,row,col,num):
+		if self.m[row][col]:
+			return False
+		return (num in self.noIncOnSquare(row//3,col//3))&(num in self.noIncOnRow(row))&(num in self.noIncOnCol(col))
+		
+	def getHashNum(self):
+		return self.hn
+		
+	def getMinLostCountNum(self):
+		hn=self.getHashNum()
+		ans=None
+		c=-1
+		for i,e in enumerate(hn):
+			if i and (c<e<9):
+				ans=i
+				c=e
+		return ans
+		
+	def getHashStr(self):
+		return ''.join([''.join([str(i)for i in l])for l in self.m])
+		
+	def setOnHashStr(self,hs):
+		for i in range(9):
+			for j in range(9):
+				self.m[i][j]=int(hs[i*9+j])
+		self.precalc()
+		
+	def __str__(self):
+		return '\n'.join([' '.join([str(i)for i in l])for l in self.m])
+		
+	def complete(self):
+		hn=self.getHashNum()
+		if hn[0]:
+			return False
+		return True
+		
 	def getVarPos(self,num):
 		vp=[(i,j) for i,j in self.vp[num] if self.noIncOnCellNum(i,j,num)]
 		return vp
-	def _getVarPos(self,num):
-		l=[]
-		for i in range(9):
-			for j in range(9):
-				if self.noIncOnCellNum(i,j,num):
-					l.append((i,j))
-		return l
+		
 	def set(self,row,col,val):
 		self.rows_on_set[row].remove(val)
 		self.cols_on_set[col].remove(val)
@@ -125,6 +148,7 @@ class Sudoku:
 		self.hn[val]+=1
 		self.hn[0]-=1
 		self.m[row][col]=val
+		
 	def unset(self,row,col):
 		val=self.m[row][col]
 		self.rows_on_set[row].add(val)
@@ -134,30 +158,11 @@ class Sudoku:
 		self.hn[0]+=1
 		self.m[row][col]=0
 		
-class SudokuOnSet(Sudoku):
-	def __init__(self,m=None):
-		self.m=m if m else [[0 for j in range(9)]for i in range(9)]
-		self.hn={}
-		self.rows_on_set=[set() for i in range(9)]
-		self.cols_on_set=[set() for i in range(9)]
-		self.squs_on_set=[set() for i in range(9)]
-		self.vp={i:set() for i in range(1,10)}
-		self.precalc()
-	def getVarPos(self,num):
-		vp={(i,j) for i,j in self.vp[num] if self.noIncOnCellNum(i,j,num)}
-		return vp
-	def _getVarPos(self,num):
-		l=set()
-		for i in range(9):
-			for j in range(9):
-				if self.noIncOnCellNum(i,j,num):
-					l.add((i,j))
-		return l
 
 def fls(fname):
 	return [[int(i) for i in l.split(' ') if i]for l in open(fname).read().split('\n') if l]
 	
-gfile=open('data1.txt','a')
+gfile=open('data.txt','a')
 ans_set=set()
 def run(su,d=0):
 	global ans_set
@@ -171,8 +176,8 @@ def run(su,d=0):
 		return 0
 	n=su.getMinLostCountNum()
 	#~ print(d,n,len(ans_set))
-	#~ if len(ans_set)>0:
-		#~ return 0
+	if len(ans_set)>0:
+		return 0
 	if not n:
 		print('nm')
 		return 0
@@ -187,12 +192,12 @@ def run(su,d=0):
 
 
 
-#~ def Run(hs='000040700031500006600037090000093025000000000950680000080310009400008630003060000'):	#209.	#101.6
-#~ def Run(hs='006000137900600508025381009102860700600053900390702850009146075460030091013097004'):	#6.2	#1.8	#0.09
-#~ def Run(hs='006000137900600508025381009102860700600053900390702850009146075460030091013097000'):			#1.82	#0.1
-def Run(hs='006000137900600508025381009102860700600053900390702850009146075460030091013097084'):			#1.82	#0.02
-	#~ s1=Sudoku()
-	s1=SudokuOnSet()
+def Run():
+	#~ hs='000040700031500006600037090000093025000000000950680000080310009400008630003060000'			#209.	#101.6			#100.7
+	#~ hs='006000137900600508025381009102860700600053900390702850009146075460030091013097004'			#6.2	#1.8	#0.09
+	hs='006000137900600508025381009102860700600053900390702850009146075460030091013097000'						#1.82	#0.1	#1.8
+	#~ hs='006000137900600508025381009102860700600053900390702850009146075460030091013097084'					#1.82	#0.02	#0.001
+	s1=Sudoku()
 	s1.setOnHashStr(hs)
 	#~ s1.noIncPrec()
 	t=time.time()
