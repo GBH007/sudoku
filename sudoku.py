@@ -4,37 +4,13 @@
 # email:    mrgbh007@gmail.com
 #
 
-class SQueue:
-	def __init__(self,su):
-		self.sudoku=su
-		self.stack=[]
-	def add(self,data,l):
-		self.stack.append((l,data))
-	def set(self):
-		l,data=self.stack[-1]
-		if l==0:
-			self.sudoku.set(data[0],data[1],data[2])
-		elif l==1:
-			self.sudoku.set(data[0][0],data[0][1],data[0][2])
-	def unset(self):
-		l,data=self.stack[-1]
-		if l==0:
-			self.sudoku.unset(data[0],data[1])
-			self.stack.pop()
-		elif l==1:
-			self.sudoku.unset(data[0][0],data[0][1])
-			self.stack[-1][1].pop(0)
-			if len(self.stack[-1][1])==0:
-				self.stack.pop()
-				l=0
-		return l
-	def __len__(self):
-		return len(self.stack)
+from functions import get_miid
 
 class Sudoku:
 	def __init__(self,m=None):
 		self.m=m if m else [[0 for j in range(9)]for i in range(9)]
 		self.hn=[]
+		self.hvn=[]
 		self.rows_on_set=[[1 for i1 in range(10)] for i in range(9)]
 		self.cols_on_set=[[1 for i1 in range(10)] for i in range(9)]
 		self.squs_on_set=[[1 for i1 in range(10)] for i in range(9)]
@@ -53,6 +29,7 @@ class Sudoku:
 				self.squs_on_set[i*3+j]=self._noIncOnSquare(i,j)
 		for i in range(1,10):
 			self.vp[i]=self._getVarPos(i)
+		self._getMinPlaceCountNum()
 			
 	def _getHashNum(self):
 		hs=[0 for i in range(10)]
@@ -114,13 +91,20 @@ class Sudoku:
 		return self.rows_on_set[row][num]&self.cols_on_set[col][num]&self.squs_on_set[(row//3)*3+col//3][num]
 				
 	def getMinLostCountNum(self):
-		ans=None
+		ans=0
 		c=-1
 		for i,e in enumerate(self.hn):
 			if i and (c<e<9):
 				ans=i
 				c=e
 		return ans
+	
+	def getMinPlaceCountNum(self):
+		return get_miid(self.hvn)
+		
+	def _getMinPlaceCountNum(self):
+		self.hvn=[len([1 for i,j in self.vp[num] if self.noIncOnCellNum(i,j,num)]) for num in range(1,10)]
+		return self.getMinPlaceCountNum()
 		
 	def getHashStr(self):
 		return ''.join([''.join([str(i)for i in l])for l in self.m])
