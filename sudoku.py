@@ -7,6 +7,7 @@
 from functions import get_miid
 
 class Sudoku:
+	
 	def __init__(self,m=None):
 		self.m=m if m else [[0 for j in range(9)]for i in range(9)]
 		self.hn=[]
@@ -31,7 +32,6 @@ class Sudoku:
 				self.squs_on_set[i*3+j]=self._noIncOnSquare(i,j)
 		for i in range(1,10):
 			self.vp[i]=self._getVarPos(i)
-		self._getMinPlaceCountNum()
 		self._calcCountVarNumInCell()
 			
 	def _getHashNum(self):
@@ -98,7 +98,7 @@ class Sudoku:
 				if cols[i][j]>1:return False
 				if squs[i][j]>1:return False
 		return True
-	
+					
 	#main block	
 				
 	def noIncOnCellNum(self,row,col,num):
@@ -106,32 +106,6 @@ class Sudoku:
 			return False
 		return self.rows_on_set[row][num]&self.cols_on_set[col][num]&self.squs_on_set[(row//3)*3+col//3][num]
 				
-	def getMinLostCountNum(self):
-		ans=0
-		c=-1
-		for i,e in enumerate(self.hn):
-			if i and (c<e<9):
-				ans=i
-				c=e
-		return ans
-		
-	def getCountVarNumInCell(self):
-		for n,i in self.hhm:
-			if not self.m[i[0]][i[1]]:
-				return n,i
-		return -1,()
-	
-	def _getCountVarNumInCell(self,i):
-		return sum([1 for e in self.hm[i] if self.noIncOnCellNum(i[0],i[1],e)])
-	
-	def getMinPlaceCountNum(self):
-		return get_miid(self.hvn)
-		
-	def _getMinPlaceCountNum(self):
-		self.hvn=[len([1 for i,j in self.vp[num] if self.noIncOnCellNum(i,j,num)]) for num in range(1,10)]
-		return self.getMinPlaceCountNum()
-		
-		
 	def getHashStr(self):
 		return ''.join([''.join([str(i)for i in l])for l in self.m])
 		
@@ -158,9 +132,6 @@ class Sudoku:
 		vp=[(i,j,num) for i,j in self.vp[num] if self.noIncOnCellNum(i,j,num)]
 		return vp
 		
-	def getVarPos(self,num):
-		vp=[(i,j) for i,j in self.vp[num] if self.noIncOnCellNum(i,j,num)]
-		return vp
 		
 	def set(self,row,col,val):
 		self.rows_on_set[row][val]=0

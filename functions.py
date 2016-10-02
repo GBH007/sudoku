@@ -14,6 +14,7 @@ def get_miid(l):
 	return mi
 
 class SQueue:
+	
 	def __init__(self,su):
 		self.sudoku=su
 		self.stack=[]
