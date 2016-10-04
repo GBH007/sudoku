@@ -83,7 +83,7 @@ _ALL_STRATEGYS=[
 ]
 
 
-class Strategys:
+class Controller:
 	
 	def __init__(self,su,strategy_list=_ALL_STRATEGYS):
 		self.su=su
