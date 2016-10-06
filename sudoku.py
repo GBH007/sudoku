@@ -11,9 +11,6 @@ class Sudoku:
 	def __init__(self,m=None):
 		self.m=m if m else [[0 for j in range(9)]for i in range(9)]
 		self.hvn=[]
-		self.vp=[[] for i in range(10)]
-		self.hm={}
-		self.hhm=[]
 		self.precalc()
 		
 	#precalc block
@@ -35,8 +32,9 @@ class Sudoku:
 				self.square_cache[(i//3)*3+j//3][self.m[i][j]]=0
 				
 				
-		for i in range(1,10):
-			self.vp[i]=self._getVarPos(i)
+		self.vp=[[] for i in range(10)]
+		for n in range(1,10):
+			self.vp[n]=[(i,j) for i in range(9) for j in range(9) if self.getMCache(i,j,n)==1]
 			
 			
 		self.hm={}
@@ -44,28 +42,21 @@ class Sudoku:
 			for j in range(9):
 				if not self.m[i][j]:
 					for n in range(1,10):
-						if self.noIncOnCellNum(i,j,n):
+						if self.getMCache(i,j,n):
 							if not (i,j) in self.hm:
 								self.hm[(i,j)]=[]
 							self.hm[(i,j)].append(n)
 		self.hhm=[(len(self.hm[i]),i) for i in self.hm if len(self.hm[i])>0]
 		self.hhm.sort()
 							
-	def _getVarPos(self,num):
-		l=[]
-		for i in range(9):
-			for j in range(9):
-				if self.noIncOnCellNum(i,j,num):
-					l.append((i,j))
-		return l
 		
 		
 	#not used
 			
 	def ok(self):
-		rows=[{i:0 for i in range(10)}for j in range(9)]
-		cols=[{i:0 for i in range(10)}for j in range(9)]
-		squs=[{i:0 for i in range(10)}for j in range(9)]
+		rows=[[0 for i in range(10)] for j in range(9)]
+		cols=[[0 for i in range(10)] for j in range(9)]
+		squs=[[0 for i in range(10)] for j in range(9)]
 		for i in range(9):
 			for j in range(9):
 				rows[i][self.m[i][j]]+=1
@@ -80,10 +71,8 @@ class Sudoku:
 					
 	#main block	
 				
-	def noIncOnCellNum(self,row,col,num):
-		if self.m[row][col]:
-			return False
-		return self.rows_cache[row][num]&self.cols_cache[col][num]&self.square_cache[(row//3)*3+col//3][num]
+	def getMCache(self,row,col,num):
+		return 0 if self.m[row][col] else self.rows_cache[row][num]&self.cols_cache[col][num]&self.square_cache[(row//3)*3+col//3][num]
 				
 	def getHashStr(self):
 		return ''.join([''.join([str(i)for i in l])for l in self.m])
@@ -104,11 +93,11 @@ class Sudoku:
 		
 	def getCellPosAndN(self,i):
 		i1,j=i
-		cp=[(i1,j,n) for n in self.hm[i] if self.noIncOnCellNum(i1,j,n)]
+		cp=[(i1,j,n) for n in self.hm[i] if self.getMCache(i1,j,n)]
 		return cp
 				
 	def getVarPosAndN(self,num):
-		vp=[(i,j,num) for i,j in self.vp[num] if self.noIncOnCellNum(i,j,num)]
+		vp=[(i,j,num) for i,j in self.vp[num] if self.getMCache(i,j,num)]
 		return vp
 		
 		
