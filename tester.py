@@ -3,7 +3,7 @@
 #           Gregoriy Nikonirov
 # email:    mrgbh007@gmail.com
 #
-
+import strategy
 from sudoku import Sudoku
 from strategy import Controller
 import time
@@ -19,7 +19,8 @@ _hs=[
 def _run(hs):
 	su=Sudoku()
 	su.setOnHashStr(hs)
-	c=Controller(su)
+	c=Controller(su)											#6.5
+	#~ c=Controller(su,(strategy.MinCellPlaceStrategy,))			#4.8
 	t=time.time()
 	c.run()
 	t=time.time()-t

@@ -107,7 +107,7 @@ class Controller:
 		
 	def run(self):
 		while 1:
-			if self.su.complete():
+			if self.su.complete() and self.su.ok():
 				self.hasn=self.su.getHashStr()
 				return 1
 			l=self.getMostEffQueue()
