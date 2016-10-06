@@ -56,25 +56,20 @@ class MinCellPlaceStrategy(Strategy):
 	name='MinCellPlaceStrategy'
 	
 	def getEff(self):
-		return self._getCountVarNumInCell(self.i)
+		return self.c
 		
 	def getFastEff(self):
-		n,i=self.getCountVarNumInCell()
-		self.i=i
-		return n
+		self.i=get_miid(self.su.ncc_cache)
+		self.c=-1 if self.i<0 else self.su.ncc_cache[self.i]
+		return self.c
 		
 	def getDataToQueue(self):
 		self.counter+=1
-		return self.su.getCellPosAndN(self.i)
-		
-	def getCountVarNumInCell(self):
-		for n,i in self.su.hhm:
-			if not self.su.m[i[0]][i[1]]:
-				return n,i
-		return -1,()
-	
-	def _getCountVarNumInCell(self,i):
-		return sum([1 for e in self.su.hm[i] if self.su.getMCache(i[0],i[1],e)])
+		if self.c<1:
+			return []
+		i=self.i//9
+		j=self.i%9
+		return [(i,j,n) for n in range(1,10) if self.su.getMCache(i,j,n)]
 
 
 _ALL_STRATEGYS=[

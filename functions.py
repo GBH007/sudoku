@@ -51,8 +51,11 @@ class CellNumPlaceCountSortedList:
 		self.l_len=len(self._l)
 	def add(self,e):
 		self.l_len+=1
+		if self.l_len==1:
+			self._l.append(e)
+			return 0
 		l=0
-		r=self.l_len
+		r=self.l_len-1
 		while(r-l>1):
 			m=(l+r)//2
 			if self._l[m][0]>e[0]:
@@ -63,17 +66,22 @@ class CellNumPlaceCountSortedList:
 				l=m
 				r=m
 				break
-		print(l,m,r)
 		if self._l[l][0]>=e[0]:
 			self._l.insert(l,e)
 		else:
 			self._l.insert(r,e)
 		
-	def get(self):
+	def pop(self):
 		e=self._l[0]
 		self.l_len-=1
 		del self._l[0]
 		return e
+		
+	def getCount(self):
+		return self._l[0][0]
+		
+	def getI(self):
+		return self._l[0][1]
 		
 	def __len__(self):return self.l_len
 		
@@ -88,8 +96,8 @@ if __name__=='__main__':
 	l.add((8,0))
 	l.add((-8,0))
 	print(l)
-	print(l.get())
-	print(l.get())
+	print(l.pop())
+	print(l.pop())
 	print(l)
 	
 	l.add((2,0))
