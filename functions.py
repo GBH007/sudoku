@@ -44,3 +44,65 @@ class SQueue:
 		
 	def __len__(self):
 		return len(self.stack)
+
+class CellNumPlaceCountSortedList:
+	def __init__(self,l=None):
+		self._l=[] if not l else sorted(l)
+		self.l_len=len(self._l)
+	def add(self,e):
+		self.l_len+=1
+		if self.l_len==1:
+			self._l.append(e)
+			return 0
+		l=0
+		r=self.l_len-1
+		while(r-l>1):
+			m=(l+r)//2
+			if self._l[m][0]>e[0]:
+				r=m
+			elif self._l[m][0]<e[0]:
+				l=m
+			elif self._l[m][0]==e[0]:
+				l=m
+				r=m
+				break
+		if self._l[l][0]>=e[0]:
+			self._l.insert(l,e)
+		else:
+			self._l.insert(r,e)
+		
+	def pop(self):
+		e=self._l[0]
+		self.l_len-=1
+		del self._l[0]
+		return e
+		
+	def getCount(self):
+		return self._l[0][0]
+		
+	def getI(self):
+		return self._l[0][1]
+		
+	def __len__(self):return self.l_len
+		
+	def __str__(self):return str(self._l)
+
+
+if __name__=='__main__':
+	l=CellNumPlaceCountSortedList([(1,0),(3,0),(5,0),(6,0),(7,0),(8,0),(9,0)])
+	print(l)
+	l.add((2,0))
+	l.add((4,0))
+	l.add((8,0))
+	l.add((-8,0))
+	print(l)
+	print(l.pop())
+	print(l.pop())
+	print(l)
+	
+	l.add((2,0))
+	l.add((4,0))
+	l.add((8,0))
+	l.add((-8,0))
+	print(l)
+	#~ print(l)

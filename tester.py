@@ -19,8 +19,8 @@ _hs=[
 def _run(hs):
 	su=Sudoku()
 	su.setOnHashStr(hs)
-	c=Controller(su)											#6.5
-	#~ c=Controller(su,(strategy.MinCellPlaceStrategy,))			#4.8
+	c=Controller(su)											#6.5	#4.6
+	#~ c=Controller(su,(strategy.MinCellPlaceStrategy,))			#4.8	#1.6
 	t=time.time()
 	c.run()
 	t=time.time()-t
