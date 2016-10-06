@@ -42,7 +42,7 @@ class MinLostVarCountStrategy(Strategy):
 		
 	def getDataToQueue(self):
 		self.counter+=1
-		return self.su.getVarPosAndN(self.n)
+		return self.getVarPosAndN(self.n)
 		
 	def getMinPlaceCountNum(self):
 		return get_miid(self.su.hvn)
@@ -50,6 +50,10 @@ class MinLostVarCountStrategy(Strategy):
 	def _getMinPlaceCountNum(self):
 		self.su.hvn=[len([1 for i,j in self.su.vp[num] if self.su.getMCache(i,j,num)]) for num in range(1,10)]
 		return self.getMinPlaceCountNum()
+		
+	def getVarPosAndN(self,num):
+		vp=[(i,j,num) for i,j in self.su.vp[num] if self.su.getMCache(i,j,num)]
+		return vp
 		
 class MinCellPlaceStrategy(Strategy):
 	

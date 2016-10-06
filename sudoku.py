@@ -10,7 +10,6 @@ class Sudoku:
 	
 	def __init__(self,m=None):
 		self.m=m if m else [[0 for j in range(9)]for i in range(9)]
-		self.hvn=[]
 		self.precalc()
 		
 	#precalc block
@@ -36,34 +35,17 @@ class Sudoku:
 		for n in range(1,10):
 			self.vp[n]=[(i,j) for i in range(9) for j in range(9) if self.getMCache(i,j,n)==1]
 			
+		self.hvn=[len([1 for i,j in self.vp[num] if self.getMCache(i,j,num)]) for num in range(1,10)]
+			
 		self.free_cell_cache=[]
 		for i in range(9):
 			for j in range(9):
 				if not self.m[i][j]:
 					self.free_cell_cache.append((i,j))
 					
-		self.ncc_cache=[sum([1 for n in range(1,10) if self.getMCache(i//9,i%9,n)==1]) for i in range(81)]
-					#~ s=0
-					#~ for n in range(1,10):
-						#~ if self.getMCache(i,j,n):
-							#~ s+=1
-					#~ if s>0:
-						#~ self.cell_cache.add((s,(i,j)))
-		#~ self.hm={}
-		#~ for i in range(9):
-			#~ for j in range(9):
-				#~ if not self.m[i][j]:
-					#~ for n in range(1,10):
-						#~ if self.getMCache(i,j,n):
-							#~ if not (i,j) in self.hm:
-								#~ self.hm[(i,j)]=[]
-							#~ self.hm[(i,j)].append(n)
-		#~ self.hhm=[(len(self.hm[i]),i) for i in self.hm if len(self.hm[i])>0]
-		#~ self.hhm.sort()
-							
+		self.ncc_cache=[sum([1 for n in range(1,10) if self.getMCache(i//9,i%9,n)==1]) for i in range(81)]					
 		
-		
-	#not used
+	#rarely used
 			
 	def ok(self):
 		rows=[[0 for i in range(10)] for j in range(9)]
@@ -87,11 +69,11 @@ class Sudoku:
 		self.ncc_cache[row*9+col]=0
 		for i in range(9):
 			if i!=col:
-				self.ncc_cache[row*9+i]=sum([1 for n in range(1,10) if self.getMCache(row,i,n)==1])
+				self.ncc_cache[row*9+i]=len([1 for n in range(1,10) if self.getMCache(row,i,n)==1])
 			if i!=row:
-				self.ncc_cache[i*9+col]=sum([1 for n in range(1,10) if self.getMCache(i,col,n)==1])
+				self.ncc_cache[i*9+col]=len([1 for n in range(1,10) if self.getMCache(i,col,n)==1])
 			if ((row//3)*3+i//3)!=row or ((col//3)*3+i%3)!=col:
-				self.ncc_cache[((row//3)*3+i//3)*9+(col//3)*3+i%3]=sum([1 for n in range(1,10) if self.getMCache(((row//3)*3+i//3),(col//3)*3+i%3,n)==1])
+				self.ncc_cache[((row//3)*3+i//3)*9+(col//3)*3+i%3]=len([1 for n in range(1,10) if self.getMCache(((row//3)*3+i//3),(col//3)*3+i%3,n)==1])
 				
 	def getMCache(self,row,col,num):
 		return 0 if self.m[row][col] else self.rows_cache[row][num]&self.cols_cache[col][num]&self.square_cache[(row//3)*3+col//3][num]
@@ -113,11 +95,6 @@ class Sudoku:
 			return False
 		return True
 				
-	def getVarPosAndN(self,num):
-		vp=[(i,j,num) for i,j in self.vp[num] if self.getMCache(i,j,num)]
-		return vp
-		
-		
 	def set(self,row,col,val):
 		self.rows_cache[row][val]=0
 		self.cols_cache[col][val]=0

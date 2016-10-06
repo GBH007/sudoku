@@ -3,6 +3,7 @@
 #           Gregoriy Nikonirov
 # email:    mrgbh007@gmail.com
 #
+import strategy
 from sudoku import Sudoku
 #~ from functions import SQueue
 from strategy import Controller
