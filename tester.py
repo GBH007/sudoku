@@ -16,21 +16,24 @@ _hs=[
 	'482700100000043000300100900031000005090000030800000670003004006000370000005009312',
 ]
 
-def _run(hs):
+def _run(hs,fp=0):
 	su=SudokuData()
 	su.setOnHashStr(hs)
 	c=Controller(su)											#6.5	#4.6
-	#~ c=Controller(su,(strategy.MinCellPlaceStrategy,))			#4.8	#1.6
+	#~ c=Controller(su,(strategy.MinCellPlaceStrategy,))			#4.8	#1.6	#1.7
 	t=time.time()
 	c.run()
 	t=time.time()-t
 	print(t)
-	print(c.hash)
+	if fp==1:
+		print(c.hash)
+	if fp==2:
+		print(su)
 	print(c,end='\n\n')
 	return t
 	
 def test():
-	print(sum([_run(i) for i in _hs]))
+	print(sum([_run(i,2) for i in _hs]))
 	
 def main():
 	test()
