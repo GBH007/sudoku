@@ -4,7 +4,7 @@
 # email:    mrgbh007@gmail.com
 #
 import strategy
-from sudoku import Sudoku
+from sudoku import SudokuData
 #~ from functions import SQueue
 from strategy import Controller
 import time
@@ -15,14 +15,14 @@ def fls(fname):
 def Run():
 	hs='000040700031500006600037090000093025000000000950680000080310009400008630003060000'			#0.4
 	#~ hs='006000137900600508025381009102860700600053900390702850009146075460030091013097000'			#0.001
-	s1=Sudoku()
+	s1=SudokuData()
 	s1.setOnHashStr(hs)
 	st=Controller(s1)
 	t=time.time()
 	st.run()
 	t=time.time()-t
 	print(t)
-	s2=Sudoku()
+	s2=SudokuData()
 	s2.setOnHashStr(st.hash)
 	print(s2)
 	print(st)
