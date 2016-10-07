@@ -74,23 +74,24 @@ class MinCellPlaceStrategy(Strategy):
 
 
 _ALL_STRATEGYS=[
-	#~ MaxPlaceCountStrategy,
-	#~ MinLostVarCountStrategy,
+	MaxPlaceCountStrategy,
+	MinLostVarCountStrategy,
 	MinCellPlaceStrategy,
 ]
 
 
 class Controller:
 	
-	def __init__(self,su,strategy_list=_ALL_STRATEGYS):
+	def __init__(self,su,strategy_list=_ALL_STRATEGYS,strategy_weight=[3,3,1]):
 		self.su=su
 		self.cc=CacheController(self.su)
 		self.st=[i(self.su) for i in strategy_list]
+		self.stw=strategy_weight
 		self.hash=None
 		self.operation_stack=[]
 		
 	def getMostEffQueue(self):
-		feff=[i.getEff() for i in self.st]
+		feff=[e.getEff()*self.stw[i] for i,e in enumerate(self.st)]
 		miid=get_miid(feff)
 		if miid==-1:
 			return []
