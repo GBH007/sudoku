@@ -4,7 +4,8 @@
 # email:    mrgbh007@gmail.com
 #
 
-from functions import get_miid,SQueue
+from functions import get_miid
+from sudoku import CacheController
 
 class Strategy:
 	
@@ -16,26 +17,21 @@ class Strategy:
 		#возврашает количество вариантов хода по стратегии (чем меньше тем лчше, если =<0 то стратегия не работает)
 		pass
 		
-	def getFastEff(self):
-		#тоже что и getEff только является приблизительной оценкой для первичного выбора
-		pass
-		
 	def getDataToQueue(self):
 		#возврашает варианты хода 0-*
 		pass
+	
+	def getMCache(self,row,col,num):
+		return 0 if self.su.m[row][col] else self.su.rows_cache[row][num]&self.su.cols_cache[col][num]&self.su.square_cache[(row//3)*3+col//3][num]
 		
-class MinLostVarCountStrategy(Strategy):
+class _MinLostVarCountStrategy(Strategy):
 	
 	name='MinLostVarCountStrategy'
 	
 	def __init__(self,su):
 		Strategy.__init__(self,su)
 		self._getMinPlaceCountNum()
-	
-	def getFastEff(self):
-		self.n=self.getMinPlaceCountNum()
-		return self.su.hvn[self.n] if self.n>0 else self.n
-		
+			
 	def getEff(self):
 		self.n=self._getMinPlaceCountNum()
 		return self.su.hvn[self.n] if self.n>0 else self.n
@@ -48,21 +44,18 @@ class MinLostVarCountStrategy(Strategy):
 		return get_miid(self.su.hvn)
 		
 	def _getMinPlaceCountNum(self):
-		self.su.hvn=[len([1 for i,j in self.su.vp[num] if self.su.getMCache(i,j,num)]) for num in range(1,10)]
+		self.su.hvn=[len([1 for i,j in self.su.vp[num] if self.getMCache(i,j,num)]) for num in range(1,10)]
 		return self.getMinPlaceCountNum()
 		
 	def getVarPosAndN(self,num):
-		vp=[(i,j,num) for i,j in self.su.vp[num] if self.su.getMCache(i,j,num)]
+		vp=[(i,j,num) for i,j in self.su.vp[num] if self.getMCache(i,j,num)]
 		return vp
 		
 class MinCellPlaceStrategy(Strategy):
 	
 	name='MinCellPlaceStrategy'
-	
+			
 	def getEff(self):
-		return self.c
-		
-	def getFastEff(self):
 		self.i=get_miid(self.su.ncc_cache)
 		self.c=-1 if self.i<0 else self.su.ncc_cache[self.i]
 		return self.c
@@ -73,11 +66,10 @@ class MinCellPlaceStrategy(Strategy):
 			return []
 		i=self.i//9
 		j=self.i%9
-		return [(i,j,n) for n in range(1,10) if self.su.getMCache(i,j,n)]
+		return [(i,j,n) for n in range(1,10) if self.getMCache(i,j,n)]
 
 
 _ALL_STRATEGYS=[
-	MinLostVarCountStrategy,
 	MinCellPlaceStrategy,
 ]
 
@@ -86,36 +78,74 @@ class Controller:
 	
 	def __init__(self,su,strategy_list=_ALL_STRATEGYS):
 		self.su=su
+		self.cc=CacheController(self.su)
 		self.st=[i(self.su) for i in strategy_list]
-		self.sq=SQueue(su)
-		self.hasn=None
+		self.hash=None
+		self.operation_stack=[]
 		
 	def getMostEffQueue(self):
-		feff=[i.getFastEff() for i in self.st]
+		feff=[i.getEff() for i in self.st]
 		miid=get_miid(feff)
 		if miid==-1:
 			return []
-		while 1:
-			feff[miid]=self.st[miid].getEff()
-			miid1=get_miid(feff)
-			if miid==miid1:
-				break
-			else:
-				miid=miid1
 		return self.st[miid].getDataToQueue()
 		
 	def run(self):
 		while 1:
-			if self.su.complete() and self.su.ok():
-				self.hasn=self.su.getHashStr()
+			if self.complete() and self.suOk():
+				self.hash=self.su.getHashStr()
 				return 1
 			l=self.getMostEffQueue()
 			if not l:
-				while not self.sq.unset():pass
+				self.unset()
 			else:
-				self.sq.add(l,1)
-			self.sq.set()
+				self.operation_stack.append((1,l))
+			self.set()
+			
+	def complete(self):
+		return False if self.su.number_cache[0] else True
 	
+	def set(self):
+		l,data=self.operation_stack[-1]
+		if l==0:
+			self.su.m[data[0]][data[1]]=data[2]
+			self.cc.set(data[0],data[1],data[2])
+		elif l==1:
+			self.su.m[data[0][0]][data[0][1]]=data[0][2]
+			self.cc.set(data[0][0],data[0][1],data[0][2])
+			
+	def unset(self):
+		l=0
+		while not l:
+			l,data=self.operation_stack[-1]
+			if l==0:
+				self.su.m[data[0]][data[1]]=0
+				self.cc.unset(data[0],data[1],data[2])
+				self.operation_stack.pop()
+			elif l==1:
+				self.su.m[data[0][0]][data[0][1]]=0
+				self.cc.unset(data[0][0],data[0][1],data[0][2])
+				self.operation_stack[-1][1].pop(0)
+				if len(self.operation_stack[-1][1])==0:
+					self.operation_stack.pop()
+					l=0
+	
+	def suOk(self):
+		rows=[[0 for i in range(10)] for j in range(9)]
+		cols=[[0 for i in range(10)] for j in range(9)]
+		squs=[[0 for i in range(10)] for j in range(9)]
+		for i in range(9):
+			for j in range(9):
+				rows[i][self.su.m[i][j]]+=1
+				cols[j][self.su.m[i][j]]+=1
+				squs[(i//3)*3+j//3][self.su.m[i][j]]+=1
+		for i in range(9):
+			for j in range(1,10):
+				if rows[i][j]>1:return False
+				if cols[i][j]>1:return False
+				if squs[i][j]>1:return False
+		return True
+		
 	def __str__(self):
 		return '\n'.join(['{0.name}  {0.counter}'.format(i) for i in self.st])
 
