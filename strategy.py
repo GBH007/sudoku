@@ -27,30 +27,14 @@ class Strategy:
 class MinLostVarCountStrategy(Strategy):
 	
 	name='MinLostVarCountStrategy'
-	
-	#~ def __init__(self,su):
-		#~ Strategy.__init__(self,su)
-		#~ self._getMinPlaceCountNum()
-			
+				
 	def getEff(self):
 		self.n=get_miid(self.su.cpon_cache)
-		return self.su.cpon_cache[self.n] if self.n>=0 else self.n
+		return self.su.cpon_cache[self.n] if self.n>0 else self.n
 		
 	def getDataToQueue(self):
 		self.counter+=1
-		#~ return self.getVarPosAndN(self.n)
-		return [(i,j,self.n) for i,j in self.su.pon_cache[self.n]] if self.n>=0 else []
-		
-	#~ def getMinPlaceCountNum(self):
-		#~ return get_miid(self.su.cpon_cache)
-		
-	#~ def _getMinPlaceCountNum(self):
-		#~ self.su.cpon_cache=[len([1 for i,j in self.su.pon_cache[num] if self.getMCache(i,j,num)]) for num in range(1,10)]
-		#~ return self.getMinPlaceCountNum()
-		
-	#~ def getVarPosAndN(self,num):
-		#~ vp=[(i,j,num) for i,j in self.su.vp[num] if self.getMCache(i,j,num)]
-		#~ return vp
+		return [(i,j,self.n) for i,j in self.su.pon_cache[self.n]] if self.n>0 else []
 		
 class MinCellPlaceStrategy(Strategy):
 	
@@ -71,7 +55,7 @@ class MinCellPlaceStrategy(Strategy):
 
 
 _ALL_STRATEGYS=[
-	#~ MinLostVarCountStrategy,
+	MinLostVarCountStrategy,
 	MinCellPlaceStrategy,
 ]
 
@@ -94,7 +78,7 @@ class Controller:
 		
 	def run(self):
 		while 1:
-			if self.complete():# and self.suOk():
+			if self.complete() and self.suOk():
 				self.hash=self.su.getHashStr()
 				return 1
 			l=self.getMostEffQueue()
@@ -113,7 +97,6 @@ class Controller:
 			self.su.m[data[0]][data[1]]=data[2]
 			self.cc.set(data[0],data[1],data[2])
 		elif l==1:
-			print(data)
 			self.su.m[data[0][0]][data[0][1]]=data[0][2]
 			self.cc.set(data[0][0],data[0][1],data[0][2])
 			

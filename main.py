@@ -17,6 +17,7 @@ def Run():
 	s1=SudokuData()
 	s1.setOnHashStr(hs)
 	st=Controller(s1)
+	#~ st=Controller(s1,(strategy.MinCellPlaceStrategy,))
 	t=time.time()
 	st.run()
 	t=time.time()-t
@@ -25,6 +26,5 @@ def Run():
 	s2.setOnHashStr(st.hash)
 	print(s2)
 	print(st)
-	print(st.suOk())
 	
 Run()

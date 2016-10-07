@@ -53,7 +53,6 @@ class CacheController:
 		for n in range(1,10):
 			self.su.pon_cache[n]=[(i,j) for i in range(9) for j in range(9) if self.getMCache(i,j,n)==1]
 			
-		#~ self.su.cpon_cache=[len([1 for i,j in self.su.pon_cache[num] if self.getMCache(i,j,num)]) for num in range(1,10)]
 		#count position of numeber cache
 		self.su.cpon_cache=[len([1 for i,j in self.su.pon_cache[num]]) for num in range(10)]
 			
@@ -68,17 +67,7 @@ class CacheController:
 		
 	def getMCache(self,row,col,num):
 		return 0 if self.su.m[row][col] else self.su.rows_cache[row][num]&self.su.cols_cache[col][num]&self.su.square_cache[(row//3)*3+col//3][num]
-		
-	#~ def nccCacheUpdate(self,row,col):
-		#~ self.su.ncc_cache[row*9+col]=0
-		#~ for i in range(9):
-			#~ if i!=col:
-				#~ self.su.ncc_cache[row*9+i]=len([1 for n in range(1,10) if self.getMCache(row,i,n)==1])
-			#~ if i!=row:
-				#~ self.su.ncc_cache[i*9+col]=len([1 for n in range(1,10) if self.getMCache(i,col,n)==1])
-			#~ if ((row//3)*3+i//3)!=row or ((col//3)*3+i%3)!=col:
-				#~ self.su.ncc_cache[((row//3)*3+i//3)*9+(col//3)*3+i%3]=len([1 for n in range(1,10) if self.getMCache(((row//3)*3+i//3),(col//3)*3+i%3,n)==1])
-		
+				
 	def set(self,row,col,val):
 		self.su.rows_cache[row][val]=0
 		self.su.cols_cache[col][val]=0
@@ -136,7 +125,7 @@ class CacheController:
 					self.su.cpon_cache[val]+=1
 		self.su.ncc_cache[row*9+col]=sum(self.su.m_cube_cache[row][col])
 		for n in range(1,10):
-			if (row,col) not in self.su.pon_cache[n]:
+			if (self.getMCache(row,col,n)) and ((row,col) not in self.su.pon_cache[n]):
 				self.su.pon_cache[n].append((row,col))
 				self.su.cpon_cache[n]+=1
 				
