@@ -23,7 +23,7 @@ def Run():
 	t=time.time()-t
 	print(t)
 	s2=Sudoku()
-	s2.setOnHashStr(st.hasn)
+	s2.setOnHashStr(st.hash)
 	print(s2)
 	print(st)
 	

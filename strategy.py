@@ -4,7 +4,7 @@
 # email:    mrgbh007@gmail.com
 #
 
-from functions import get_miid,SQueue
+from functions import get_miid
 
 class Strategy:
 	
@@ -24,18 +24,14 @@ class Strategy:
 		#возврашает варианты хода 0-*
 		pass
 		
-class MinLostVarCountStrategy(Strategy):
+class _MinLostVarCountStrategy(Strategy):
 	
 	name='MinLostVarCountStrategy'
 	
 	def __init__(self,su):
 		Strategy.__init__(self,su)
 		self._getMinPlaceCountNum()
-	
-	def getFastEff(self):
-		self.n=self.getMinPlaceCountNum()
-		return self.su.hvn[self.n] if self.n>0 else self.n
-		
+			
 	def getEff(self):
 		self.n=self._getMinPlaceCountNum()
 		return self.su.hvn[self.n] if self.n>0 else self.n
@@ -58,11 +54,8 @@ class MinLostVarCountStrategy(Strategy):
 class MinCellPlaceStrategy(Strategy):
 	
 	name='MinCellPlaceStrategy'
-	
+			
 	def getEff(self):
-		return self.c
-		
-	def getFastEff(self):
 		self.i=get_miid(self.su.ncc_cache)
 		self.c=-1 if self.i<0 else self.su.ncc_cache[self.i]
 		return self.c
@@ -77,7 +70,6 @@ class MinCellPlaceStrategy(Strategy):
 
 
 _ALL_STRATEGYS=[
-	MinLostVarCountStrategy,
 	MinCellPlaceStrategy,
 ]
 
@@ -87,34 +79,48 @@ class Controller:
 	def __init__(self,su,strategy_list=_ALL_STRATEGYS):
 		self.su=su
 		self.st=[i(self.su) for i in strategy_list]
-		self.sq=SQueue(su)
-		self.hasn=None
+		self.hash=None
+		self.operation_stack=[]
 		
 	def getMostEffQueue(self):
-		feff=[i.getFastEff() for i in self.st]
+		feff=[i.getEff() for i in self.st]
 		miid=get_miid(feff)
 		if miid==-1:
 			return []
-		while 1:
-			feff[miid]=self.st[miid].getEff()
-			miid1=get_miid(feff)
-			if miid==miid1:
-				break
-			else:
-				miid=miid1
 		return self.st[miid].getDataToQueue()
 		
 	def run(self):
 		while 1:
 			if self.su.complete() and self.su.ok():
-				self.hasn=self.su.getHashStr()
+				self.hash=self.su.getHashStr()
 				return 1
 			l=self.getMostEffQueue()
 			if not l:
-				while not self.sq.unset():pass
+				while not self.unset():pass
 			else:
-				self.sq.add(l,1)
-			self.sq.set()
+				self.operation_stack.append((1,l))
+			self.set()
+			
+	
+	def set(self):
+		l,data=self.operation_stack[-1]
+		if l==0:
+			self.su.set(data[0],data[1],data[2])
+		elif l==1:
+			self.su.set(data[0][0],data[0][1],data[0][2])
+			
+	def unset(self):
+		l,data=self.operation_stack[-1]
+		if l==0:
+			self.su.unset(data[0],data[1])
+			self.operation_stack.pop()
+		elif l==1:
+			self.su.unset(data[0][0],data[0][1])
+			self.operation_stack[-1][1].pop(0)
+			if len(self.operation_stack[-1][1])==0:
+				self.operation_stack.pop()
+				l=0
+		return l
 	
 	def __str__(self):
 		return '\n'.join(['{0.name}  {0.counter}'.format(i) for i in self.st])

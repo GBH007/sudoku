@@ -4,7 +4,7 @@
 # email:    mrgbh007@gmail.com
 #
 
-from functions import get_miid,CellNumPlaceCountSortedList
+from functions import get_miid
 
 class Sudoku:
 	

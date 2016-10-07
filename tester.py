@@ -25,7 +25,7 @@ def _run(hs):
 	c.run()
 	t=time.time()-t
 	print(t)
-	print(c.hasn)
+	print(c.hash)
 	print(c,end='\n\n')
 	return t
 	
