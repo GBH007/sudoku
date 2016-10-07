@@ -4,7 +4,7 @@
 # email:    mrgbh007@gmail.com
 #
 
-from functions import get_miid
+from functions import get_miid,get_meid9
 from sudoku import CacheController
 
 class Strategy:
@@ -24,13 +24,32 @@ class Strategy:
 	def getMCache(self,row,col,num):
 		return 0 if self.su.m[row][col] else self.su.rows_cache[row][num]&self.su.cols_cache[col][num]&self.su.square_cache[(row//3)*3+col//3][num]
 		
+class MaxPlaceCountStrategy(Strategy):
+	
+	name='MaxPlaceCountStrategy'
+			
+	def getEff(self):
+		self.n=get_meid9(self.su.number_cache)
+		return 9-self.su.number_cache[self.n] if self.n else 0
+
+	def getDataToQueue(self):
+		self.counter+=1
+		return [(i,j,self.n) for i,j in self.su.pon_cache[self.n]] if self.n>0 else []
+
 class MinLostVarCountStrategy(Strategy):
 	
 	name='MinLostVarCountStrategy'
 				
 	def getEff(self):
+		#~ if self.su.number_cache[0]>30:
+			#~ return -1
 		self.n=get_miid(self.su.cpon_cache)
-		return self.su.cpon_cache[self.n] if self.n>0 else self.n
+		if self.n>0:
+			s=self.su.cpon_cache[self.n]
+		else:
+			s=-1
+		#~ return self.su.cpon_cache[self.n] if self.n>0 else self.n
+		return s
 		
 	def getDataToQueue(self):
 		self.counter+=1
@@ -55,7 +74,8 @@ class MinCellPlaceStrategy(Strategy):
 
 
 _ALL_STRATEGYS=[
-	MinLostVarCountStrategy,
+	#~ MaxPlaceCountStrategy,
+	#~ MinLostVarCountStrategy,
 	MinCellPlaceStrategy,
 ]
 
