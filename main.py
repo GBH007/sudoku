@@ -25,5 +25,6 @@ def Run():
 	s2.setOnHashStr(st.hash)
 	print(s2)
 	print(st)
+	print(st.suOk())
 	
 Run()

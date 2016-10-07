@@ -24,32 +24,33 @@ class Strategy:
 	def getMCache(self,row,col,num):
 		return 0 if self.su.m[row][col] else self.su.rows_cache[row][num]&self.su.cols_cache[col][num]&self.su.square_cache[(row//3)*3+col//3][num]
 		
-class _MinLostVarCountStrategy(Strategy):
+class MinLostVarCountStrategy(Strategy):
 	
 	name='MinLostVarCountStrategy'
 	
-	def __init__(self,su):
-		Strategy.__init__(self,su)
-		self._getMinPlaceCountNum()
+	#~ def __init__(self,su):
+		#~ Strategy.__init__(self,su)
+		#~ self._getMinPlaceCountNum()
 			
 	def getEff(self):
-		self.n=self._getMinPlaceCountNum()
-		return self.su.hvn[self.n] if self.n>0 else self.n
+		self.n=get_miid(self.su.cpon_cache)
+		return self.su.cpon_cache[self.n] if self.n>=0 else self.n
 		
 	def getDataToQueue(self):
 		self.counter+=1
-		return self.getVarPosAndN(self.n)
+		#~ return self.getVarPosAndN(self.n)
+		return [(i,j,self.n) for i,j in self.su.pon_cache[self.n]] if self.n>=0 else []
 		
-	def getMinPlaceCountNum(self):
-		return get_miid(self.su.hvn)
+	#~ def getMinPlaceCountNum(self):
+		#~ return get_miid(self.su.cpon_cache)
 		
-	def _getMinPlaceCountNum(self):
-		self.su.hvn=[len([1 for i,j in self.su.vp[num] if self.getMCache(i,j,num)]) for num in range(1,10)]
-		return self.getMinPlaceCountNum()
+	#~ def _getMinPlaceCountNum(self):
+		#~ self.su.cpon_cache=[len([1 for i,j in self.su.pon_cache[num] if self.getMCache(i,j,num)]) for num in range(1,10)]
+		#~ return self.getMinPlaceCountNum()
 		
-	def getVarPosAndN(self,num):
-		vp=[(i,j,num) for i,j in self.su.vp[num] if self.getMCache(i,j,num)]
-		return vp
+	#~ def getVarPosAndN(self,num):
+		#~ vp=[(i,j,num) for i,j in self.su.vp[num] if self.getMCache(i,j,num)]
+		#~ return vp
 		
 class MinCellPlaceStrategy(Strategy):
 	
@@ -70,6 +71,7 @@ class MinCellPlaceStrategy(Strategy):
 
 
 _ALL_STRATEGYS=[
+	#~ MinLostVarCountStrategy,
 	MinCellPlaceStrategy,
 ]
 
@@ -92,7 +94,7 @@ class Controller:
 		
 	def run(self):
 		while 1:
-			if self.complete() and self.suOk():
+			if self.complete():# and self.suOk():
 				self.hash=self.su.getHashStr()
 				return 1
 			l=self.getMostEffQueue()
@@ -111,6 +113,7 @@ class Controller:
 			self.su.m[data[0]][data[1]]=data[2]
 			self.cc.set(data[0],data[1],data[2])
 		elif l==1:
+			print(data)
 			self.su.m[data[0][0]][data[0][1]]=data[0][2]
 			self.cc.set(data[0][0],data[0][1],data[0][2])
 			
