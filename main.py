@@ -18,6 +18,7 @@ def Run():
 	s1=SudokuData()
 	s1.setOnHashStr(hs)
 	st=Controller(s1)
+	#~ st=Controller(s1,strategy_weight=[1,1,1])
 	#~ st=Controller(s1,strategy_weight=[3,3,1])
 	#~ st=Controller(s1,strategy_weight=[0,0,1])
 	#~ st=Controller(s1,(strategy.MinCellPlaceStrategy,))

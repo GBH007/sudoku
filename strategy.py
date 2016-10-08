@@ -50,7 +50,7 @@ class MinLostVarCountStrategy(Strategy):
 		
 	def getDataToQueue(self):
 		self.counter+=1
-		return [(i,j,self.n) for i,j in self.su.pon_cache[self.n]] if self.n>0 else []
+		return sorted([(i,j,self.n) for i,j in self.su.pon_cache[self.n]],key=lambda x: self.su.ncc_cache[x[0]*9+x[1]]) if self.n>0 else []
 		
 class MinCellPlaceStrategy(Strategy):
 	
@@ -67,7 +67,7 @@ class MinCellPlaceStrategy(Strategy):
 			return []
 		i=self.i//9
 		j=self.i%9
-		return [(i,j,n) for n in range(1,10) if self.getMCache(i,j,n)]
+		return sorted([(i,j,n) for n in range(1,10) if self.getMCache(i,j,n)],key=lambda x: self.su.cpon_cache[x[2]])
 
 
 _ALL_STRATEGYS=[
