@@ -56,9 +56,40 @@ def _run1(hs):
 def test1():
 	#~ _run1('000040700031500006600037090000093025000000000950680000080310009400008630003060000')
 	print([(_run1(i),i.count('0'))[1] for i in _hs])
+	
+def _run2(hs,ahs=None,ff=1):
+	su=SudokuData()
+	su.setOnHashStr(hs)
+	#~ c=Controller(su,strategy_weight=[0,0,1])
+	c=Controller(su,strategy_weight=[5,5,1])
+	#~ c=Controller(su)
+	try:
+		t=time.time()
+		c.run()
+		t=time.time()-t
+	except IndexError:
+		t=1000
+	if ff:
+		return t
+	print(t)
+	return t,(1 if c.hash==ahs else 0)
+	
+def test2():
+	hsd=[]
+	for d in range(1,5):
+		f=open('{0}.data'.format(d))
+		data=f.read().split('\n')
+		data=[i.split(' ')[0].strip() for i in data if i]
+		hsd.append(data[:20])
+	td=[0 for d in range(4)]
+	for d in range(4):
+		print(d)
+		td[d]=[_run2(i) for i in hsd[d]]					#001 0.11 31.46 91.41 14.45	#331 0.078 2002.24 1012.15 2006.12	#551 0.105 9.46 61.3 18.34
+	print(*[(d,sum(i)) for d,i in enumerate(td)])
+		
 
 def main():
-	test()
+	test2()
 
 if __name__=='__main__':
 	main()
