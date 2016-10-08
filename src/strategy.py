@@ -4,8 +4,8 @@
 # email:    mrgbh007@gmail.com
 #
 
-from functions import get_miid,get_meid9
-from sudoku import CacheController
+from .functions import get_miid,get_meid9
+from .sudoku import CacheController
 
 class Strategy:
 	
@@ -92,9 +92,9 @@ class Controller:
 	def getMostEffQueue(self):
 		#~ n0c=(self.n0c-self.su.number_cache[0])/self.n0c
 		#~ n0c=(-(n0c*2-1)**2+1)
-		#~ stw=[e-2*n0c if i!=2 else e for i,e in enumerate(self.stw)]
-		feff=[e.getEff()*self.stw[i] for i,e in enumerate(self.st)]
+		#~ stw=[e-2*n0c if i!=0 else e for i,e in enumerate(self.stw)]
 		#~ feff=[e.getEff()*stw[i] for i,e in enumerate(self.st)]
+		feff=[e.getEff()*self.stw[i] for i,e in enumerate(self.st)]
 		miid=get_miid(feff)
 		if miid==-1:
 			return []
@@ -113,7 +113,7 @@ class Controller:
 					self.operation_stack.append((1,l))
 				self.set()
 		except IndexError:
-			self.stw=[1,9,9]
+			self.stw=[1,7,7]
 			self.run()
 			
 	def complete(self):

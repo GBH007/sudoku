@@ -3,9 +3,9 @@
 #           Gregoriy Nikonirov
 # email:    mrgbh007@gmail.com
 #
-import strategy
-from sudoku import SudokuData
-from strategy import Controller
+import src.strategy as strategy
+from src import SudokuData
+from src import Controller
 import time
 
 def fls(fname):

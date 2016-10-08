@@ -21,12 +21,12 @@ def m1():
 	for d in range(1,5):
 	#~ for d in range(1,2):
 		print(d)
-		f=open('{0}.data'.format(d),'w')
-		#~ for n in range(1,3852):
-		for n in range(1,101):
+		f=open('f{0}.data'.format(d),'w')
+		for n in range(1,3852):
+		#~ for n in range(1,101):
 			data=load_p(d,n)
 			if data:
 				print(*data,file=f)
 			
 
-#~ m1()
+m1()

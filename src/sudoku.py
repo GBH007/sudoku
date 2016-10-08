@@ -4,7 +4,7 @@
 # email:    mrgbh007@gmail.com
 #
 
-from functions import get_miid
+from .functions import get_miid
 
 class SudokuData:
 	

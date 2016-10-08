@@ -3,9 +3,9 @@
 #           Gregoriy Nikonirov
 # email:    mrgbh007@gmail.com
 #
-import strategy
-from sudoku import SudokuData
-from strategy import Controller
+import src.strategy as strategy
+from src import SudokuData
+from src import Controller
 import time
 
 strat=[
@@ -66,7 +66,7 @@ def test1():
 def _run2(hs,ahs=None,ff=1):
 	su=SudokuData()
 	su.setOnHashStr(hs)
-	#~ c=Controller(su,strat,strategy_weight=[1,1,1])
+	#~ c=Controller(su,strat,strategy_weight=[1,0,0])
 	c=Controller(su)
 	try:
 		t=time.time()
@@ -82,10 +82,11 @@ def _run2(hs,ahs=None,ff=1):
 def test2():
 	hsd=[]
 	for d in range(1,5):
-		f=open('{0}.data'.format(d))
+		f=open('data/{0}.data'.format(d))
 		data=f.read().split('\n')
 		data=[i.split(' ')[0].strip() for i in data if i]
 		hsd.append(data[:20])
+		#~ hsd.append(data)
 	td=[0 for d in range(4)]
 	for d in range(4):
 		print(d)
