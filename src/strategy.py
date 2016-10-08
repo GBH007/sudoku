@@ -34,7 +34,7 @@ class MaxPlaceCountStrategy(Strategy):
 
 	def getDataToQueue(self):
 		self.counter+=1
-		return [(i,j,self.n) for i,j in self.su.pon_cache[self.n]] if self.n>0 else []
+		return sorted([(i,j,self.n) for i,j in self.su.pon_cache[self.n]],key=lambda x: self.su.ncc_cache[x[0]*9+x[1]]) if self.n>0 else []
 
 class MinLostVarCountStrategy(Strategy):
 	
@@ -106,6 +106,10 @@ class Controller:
 				if self.complete() and self.suOk():
 					self.hash=self.su.getHashStr()
 					return 1
+				if 35>self.su.number_cache[0]>25 and self.brokenFieldCheck():
+					self.unset()
+					self.set()
+					continue
 				l=self.getMostEffQueue()
 				if not l:
 					self.unset()
@@ -116,6 +120,12 @@ class Controller:
 			self.stw=[1,7,7]
 			self.run()
 			
+	def brokenFieldCheck(self):
+		for i in range(1,10):
+			if self.su.cpon_cache[i]+self.su.number_cache[i]-9<0:
+				return True
+		return False
+		
 	def complete(self):
 		return False if self.su.number_cache[0] else True
 	
