@@ -6,6 +6,7 @@
 
 from .functions import get_miid,get_meid9
 from .sudoku import CacheController
+import itertools
 
 class Strategy:
 	
@@ -24,6 +25,23 @@ class Strategy:
 	def getMCache(self,row,col,num):
 		return 0 if self.su.m[row][col] else self.su.rows_cache[row][num]&self.su.cols_cache[col][num]&self.su.square_cache[(row//3)*3+col//3][num]
 		
+	def getUseCount(self,row,col,num):
+		s=0
+		sis=(row//3)*3
+		sie=sis+2
+		sjs=(col//3)*3
+		sje=sjs+2
+		for i in range(9):
+			if (i<sis or i>sie) and self.getMCache(i,col,num):
+				s+=1
+			if (i<sjs or i>sje) and self.getMCache(row,i,num):
+				s+=1
+			if self.getMCache((row//3)*3+i//3,(col//3)*3+i%3,num):
+				s+=1
+			if i+1!=num and self.getMCache(row,col,i+1)==1:
+				s+=1
+		return s
+		
 class MaxPlaceCountStrategy(Strategy):
 	
 	name='MaxPlaceCountStrategy'
@@ -34,7 +52,15 @@ class MaxPlaceCountStrategy(Strategy):
 
 	def getDataToQueue(self):
 		self.counter+=1
-		return [(i,j,self.n) for i,j in self.su.pon_cache[self.n]] if self.n>0 else []
+		#~ return sorted([(i,j,self.n) for i,j in self.su.pon_cache[self.n]],key=lambda x: self.su.ncc_cache[x[0]*9+x[1]]) if self.n>0 else []
+		return sorted([(i,j,self.n) for i,j in self.su.pon_cache[self.n]],key=lambda x: self.getUseCount(x[0],x[1],x[2]),reverse=0) if self.n>0 else []
+		#~ return [(i,j,self.n) for i,j in self.su.pon_cache[self.n]] if self.n>0 else []
+		
+	def getBestData(self):
+		self.counter+=1
+		self.n=get_meid9(self.su.number_cache)
+		if self.n<1: return []
+		return [(self.getUseCount(i,j,self.n),(i,j,self.n)) for i,j in self.su.pon_cache[self.n]]
 
 class MinLostVarCountStrategy(Strategy):
 	
@@ -50,7 +76,15 @@ class MinLostVarCountStrategy(Strategy):
 		
 	def getDataToQueue(self):
 		self.counter+=1
-		return sorted([(i,j,self.n) for i,j in self.su.pon_cache[self.n]],key=lambda x: self.su.ncc_cache[x[0]*9+x[1]]) if self.n>0 else []
+		#~ return sorted([(i,j,self.n) for i,j in self.su.pon_cache[self.n]],key=lambda x: self.su.ncc_cache[x[0]*9+x[1]]) if self.n>0 else []
+		return sorted([(i,j,self.n) for i,j in self.su.pon_cache[self.n]],key=lambda x: self.getUseCount(x[0],x[1],x[2]),reverse=0) if self.n>0 else []
+		#~ return [(i,j,self.n) for i,j in self.su.pon_cache[self.n]] if self.n>0 else []
+		
+	def getBestData(self):
+		self.counter+=1
+		self.n=get_miid(self.su.cpon_cache)
+		if self.n<1: return []
+		return [(self.getUseCount(i,j,self.n),(i,j,self.n)) for i,j in self.su.pon_cache[self.n]]
 		
 class MinCellPlaceStrategy(Strategy):
 	
@@ -67,7 +101,17 @@ class MinCellPlaceStrategy(Strategy):
 			return []
 		i=self.i//9
 		j=self.i%9
-		return sorted([(i,j,n) for n in range(1,10) if self.getMCache(i,j,n)],key=lambda x: self.su.cpon_cache[x[2]])
+		#~ return sorted([(i,j,n) for n in range(1,10) if self.getMCache(i,j,n)],key=lambda x: self.su.cpon_cache[x[2]])
+		return sorted([(i,j,n) for n in range(1,10) if self.getMCache(i,j,n)],key=lambda x: self.getUseCount(x[0],x[1],x[2]),reverse=0)
+		#~ return [(i,j,n) for n in range(1,10) if self.getMCache(i,j,n)]
+		
+	def getBestData(self):
+		self.counter+=1
+		self.i=get_miid(self.su.ncc_cache)
+		if self.i<0: return []
+		i=self.i//9
+		j=self.i%9
+		return [(self.getUseCount(i,j,n),(i,j,n)) for n in range(1,10) if self.getMCache(i,j,n)]
 
 
 _ALL_STRATEGYS=[
@@ -89,6 +133,17 @@ class Controller:
 		self.hash=None
 		self.operation_stack=[]
 		
+	def getMostEffQueue1(self):
+		s=[]
+		for st in self.st:
+			s+=st.getBestData()
+		s=list(set(s))
+		s.sort(reverse=0)
+		#~ print(s)
+		#~ raise Exception
+		#~ s.sort()
+		#~ print(s)
+		return [i[1] for i in s[:5]]
 	def getMostEffQueue(self):
 		#~ n0c=(self.n0c-self.su.number_cache[0])/self.n0c
 		#~ n0c=(-(n0c*2-1)**2+1)
@@ -106,6 +161,10 @@ class Controller:
 				if self.complete() and self.suOk():
 					self.hash=self.su.getHashStr()
 					return 1
+				#~ if self.brokenFieldCheck():
+					#~ self.unset()
+					#~ self.set()
+					#~ continue
 				l=self.getMostEffQueue()
 				if not l:
 					self.unset()
@@ -118,6 +177,14 @@ class Controller:
 			
 	def complete(self):
 		return False if self.su.number_cache[0] else True
+	
+	def brokenFieldCheck(self):
+		for i in range(1,10):
+			if self.su.cpon_cache[i]+self.su.number_cache[i]-9<0:
+				#~ print(self.su.cpon_cache[i]+self.su.number_cache[i]-9,self.su.cpon_cache,self.su.number_cache,i)
+				#~ raise Exception
+				return True
+		return False
 	
 	def set(self):
 		l,data=self.operation_stack[-1]
