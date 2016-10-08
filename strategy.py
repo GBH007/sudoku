@@ -41,14 +41,11 @@ class MinLostVarCountStrategy(Strategy):
 	name='MinLostVarCountStrategy'
 				
 	def getEff(self):
-		#~ if self.su.number_cache[0]>30:
-			#~ return -1
 		self.n=get_miid(self.su.cpon_cache)
 		if self.n>0:
 			s=self.su.cpon_cache[self.n]
 		else:
 			s=-1
-		#~ return self.su.cpon_cache[self.n] if self.n>0 else self.n
 		return s
 		
 	def getDataToQueue(self):
