@@ -162,7 +162,7 @@ class Controller:
 					self.hash=self.su.getHashStr()
 					return 1
 				#~ if self.brokenFieldCheck():
-				if 40>self.su.number_cache[0]>30 and self.brokenFieldCheck():
+				if 35>self.su.number_cache[0]>25 and self.brokenFieldCheck():
 					self.unset()
 					self.set()
 					continue

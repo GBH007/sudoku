@@ -66,8 +66,8 @@ def test1():
 def _run2(hs,ahs=None,ff=1):
 	su=SudokuData()
 	su.setOnHashStr(hs)
-	#~ c=Controller(su,strat,strategy_weight=[1,1,1])
-	c=Controller(su)
+	c=Controller(su,strat,strategy_weight=[1,2,2])
+	#~ c=Controller(su)
 	try:
 		t=time.time()
 		c.run()
