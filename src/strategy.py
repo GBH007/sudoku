@@ -162,9 +162,10 @@ class Controller:
 					self.hash=self.su.getHashStr()
 					return 1
 				#~ if self.brokenFieldCheck():
-					#~ self.unset()
-					#~ self.set()
-					#~ continue
+				if 40>self.su.number_cache[0]>30 and self.brokenFieldCheck():
+					self.unset()
+					self.set()
+					continue
 				l=self.getMostEffQueue()
 				if not l:
 					self.unset()
