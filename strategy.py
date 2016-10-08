@@ -4,7 +4,7 @@
 # email:    mrgbh007@gmail.com
 #
 
-from functions import get_miid
+from functions import get_miid,get_meid9
 from sudoku import CacheController
 
 class Strategy:
@@ -24,32 +24,33 @@ class Strategy:
 	def getMCache(self,row,col,num):
 		return 0 if self.su.m[row][col] else self.su.rows_cache[row][num]&self.su.cols_cache[col][num]&self.su.square_cache[(row//3)*3+col//3][num]
 		
-class _MinLostVarCountStrategy(Strategy):
+class MaxPlaceCountStrategy(Strategy):
 	
-	name='MinLostVarCountStrategy'
-	
-	def __init__(self,su):
-		Strategy.__init__(self,su)
-		self._getMinPlaceCountNum()
+	name='MaxPlaceCountStrategy'
 			
 	def getEff(self):
-		self.n=self._getMinPlaceCountNum()
-		return self.su.hvn[self.n] if self.n>0 else self.n
+		self.n=get_meid9(self.su.number_cache)
+		return 9-self.su.number_cache[self.n] if self.n else 0
+
+	def getDataToQueue(self):
+		self.counter+=1
+		return [(i,j,self.n) for i,j in self.su.pon_cache[self.n]] if self.n>0 else []
+
+class MinLostVarCountStrategy(Strategy):
+	
+	name='MinLostVarCountStrategy'
+				
+	def getEff(self):
+		self.n=get_miid(self.su.cpon_cache)
+		if self.n>0:
+			s=self.su.cpon_cache[self.n]
+		else:
+			s=-1
+		return s
 		
 	def getDataToQueue(self):
 		self.counter+=1
-		return self.getVarPosAndN(self.n)
-		
-	def getMinPlaceCountNum(self):
-		return get_miid(self.su.hvn)
-		
-	def _getMinPlaceCountNum(self):
-		self.su.hvn=[len([1 for i,j in self.su.vp[num] if self.getMCache(i,j,num)]) for num in range(1,10)]
-		return self.getMinPlaceCountNum()
-		
-	def getVarPosAndN(self,num):
-		vp=[(i,j,num) for i,j in self.su.vp[num] if self.getMCache(i,j,num)]
-		return vp
+		return [(i,j,self.n) for i,j in self.su.pon_cache[self.n]] if self.n>0 else []
 		
 class MinCellPlaceStrategy(Strategy):
 	
@@ -70,21 +71,24 @@ class MinCellPlaceStrategy(Strategy):
 
 
 _ALL_STRATEGYS=[
+	MaxPlaceCountStrategy,
+	MinLostVarCountStrategy,
 	MinCellPlaceStrategy,
 ]
 
 
 class Controller:
 	
-	def __init__(self,su,strategy_list=_ALL_STRATEGYS):
+	def __init__(self,su,strategy_list=_ALL_STRATEGYS,strategy_weight=[3,3,1]):
 		self.su=su
 		self.cc=CacheController(self.su)
 		self.st=[i(self.su) for i in strategy_list]
+		self.stw=strategy_weight
 		self.hash=None
 		self.operation_stack=[]
 		
 	def getMostEffQueue(self):
-		feff=[i.getEff() for i in self.st]
+		feff=[e.getEff()*self.stw[i] for i,e in enumerate(self.st)]
 		miid=get_miid(feff)
 		if miid==-1:
 			return []

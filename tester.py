@@ -19,8 +19,8 @@ _hs=[
 def _run(hs,fp=0):
 	su=SudokuData()
 	su.setOnHashStr(hs)
-	c=Controller(su)											#6.5	#4.6
-	#~ c=Controller(su,(strategy.MinCellPlaceStrategy,))			#4.8	#1.6	#1.7
+	c=Controller(su)											#0.75
+	#~ c=Controller(su,(strategy.MinCellPlaceStrategy,))			#1.02
 	t=time.time()
 	c.run()
 	t=time.time()-t
@@ -35,6 +35,28 @@ def _run(hs,fp=0):
 def test():
 	print(sum([_run(i,2) for i in _hs]))
 	
+def _run1(hs):
+	ans=[]
+	for i in range(0,5):
+		for j in range(0,5):
+			su=SudokuData()
+			su.setOnHashStr(hs)
+			c=Controller(su,strategy_weight=[i,j,1])	
+			try:
+				t=time.time()
+				c.run()
+				t=time.time()-t
+			except IndexError:
+				continue
+			#~ print((t,i,j))
+			ans.append((t,i,j))
+	ans.sort()
+	print(*ans[:3])
+	
+def test1():
+	#~ _run1('000040700031500006600037090000093025000000000950680000080310009400008630003060000')
+	print([(_run1(i),i.count('0'))[1] for i in _hs])
+
 def main():
 	test()
 
