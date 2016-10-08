@@ -8,6 +8,12 @@ from sudoku import SudokuData
 from strategy import Controller
 import time
 
+strat=[
+	strategy.MinCellPlaceStrategy,
+	strategy.MaxPlaceCountStrategy,
+	strategy.MinLostVarCountStrategy,
+]
+
 _hs=[
 	'000030002004000009000051040040320090002108300050046010030560000500000400200090000',
 	'000040700031500006600037090000093025000000000950680000080310009400008630003060000',
@@ -60,16 +66,14 @@ def test1():
 def _run2(hs,ahs=None,ff=1):
 	su=SudokuData()
 	su.setOnHashStr(hs)
-	#~ c=Controller(su,strategy_weight=[0,0,1])
-	#~ c=Controller(su,strategy_weight=[1,1,1])
-	c=Controller(su,strategy_weight=[5,5,1])
-	#~ c=Controller(su)
+	#~ c=Controller(su,strat,strategy_weight=[1,1,1])
+	c=Controller(su)
 	try:
 		t=time.time()
 		c.run()
 		t=time.time()-t
 	except IndexError:
-		t=1000
+		t=100000
 	if ff:
 		return t
 	print(t)
@@ -88,6 +92,8 @@ def test2():
 		td[d]=[_run2(i) for i in hsd[d]]					#001 0.11 31.46 91.41 14.45	#331 0.078 2002.24 1012.15 2006.12	#551 0.105 9.46 61.3 18.34
 	print(*[(d,sum(i)) for d,i in enumerate(td)])			#001 0.17 4.94 32.2 68.8	#331 0.15 1.6 9.4 8.4
 	print(sum([sum(i) for i in td]))						#001 106.12					#331 19.6
+	for i in range(4):
+		print(i,min(td[i]),max(td[i]))
 		
 
 def main():

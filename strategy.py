@@ -30,7 +30,7 @@ class MaxPlaceCountStrategy(Strategy):
 			
 	def getEff(self):
 		self.n=get_meid9(self.su.number_cache)
-		return 9-self.su.number_cache[self.n] if self.n else 0
+		return self.su.cpon_cache[self.n] if self.n else 0
 
 	def getDataToQueue(self):
 		self.counter+=1
@@ -71,40 +71,50 @@ class MinCellPlaceStrategy(Strategy):
 
 
 _ALL_STRATEGYS=[
+	MinCellPlaceStrategy,
 	MaxPlaceCountStrategy,
 	MinLostVarCountStrategy,
-	MinCellPlaceStrategy,
 ]
 
 
 class Controller:
 	
-	def __init__(self,su,strategy_list=_ALL_STRATEGYS,strategy_weight=[3,3,1]):
+	def __init__(self,su,strategy_list=_ALL_STRATEGYS,strategy_weight=[1,3,3]):
 		self.su=su
 		self.cc=CacheController(self.su)
 		self.st=[i(self.su) for i in strategy_list]
+		#~ self.n0c=self.su.number_cache[0]
+		#~ self.n0c=81
 		self.stw=strategy_weight
 		self.hash=None
 		self.operation_stack=[]
 		
 	def getMostEffQueue(self):
+		#~ n0c=(self.n0c-self.su.number_cache[0])/self.n0c
+		#~ n0c=(-(n0c*2-1)**2+1)
+		#~ stw=[e-2*n0c if i!=2 else e for i,e in enumerate(self.stw)]
 		feff=[e.getEff()*self.stw[i] for i,e in enumerate(self.st)]
+		#~ feff=[e.getEff()*stw[i] for i,e in enumerate(self.st)]
 		miid=get_miid(feff)
 		if miid==-1:
 			return []
 		return self.st[miid].getDataToQueue()
 		
 	def run(self):
-		while 1:
-			if self.complete() and self.suOk():
-				self.hash=self.su.getHashStr()
-				return 1
-			l=self.getMostEffQueue()
-			if not l:
-				self.unset()
-			else:
-				self.operation_stack.append((1,l))
-			self.set()
+		try:
+			while 1:
+				if self.complete() and self.suOk():
+					self.hash=self.su.getHashStr()
+					return 1
+				l=self.getMostEffQueue()
+				if not l:
+					self.unset()
+				else:
+					self.operation_stack.append((1,l))
+				self.set()
+		except IndexError:
+			self.stw=[1,9,9]
+			self.run()
 			
 	def complete(self):
 		return False if self.su.number_cache[0] else True
