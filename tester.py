@@ -85,8 +85,8 @@ def test2():
 		f=open('data/{0}.data'.format(d))
 		data=f.read().split('\n')
 		data=[i.split(' ')[0].strip() for i in data if i]
-		hsd.append(data[:20])
-		#~ hsd.append(data)
+		#~ hsd.append(data[:20])
+		hsd.append(data)
 	td=[0 for d in range(4)]
 	for d in range(4):
 		print(d)
