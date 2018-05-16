@@ -1,6 +1,10 @@
 package main
 
-import ()
+type DataPatch interface {
+	Row() int
+	Column() int
+	Number() int
+}
 
 type SudokuDataController struct {
 	*Sudoku
@@ -73,6 +77,9 @@ func (sdc *SudokuDataController) set(row, col, num int) {
 	sdc.countNumberCache[num] += 1
 	sdc.countNumberCache[0] -= 1
 }
+func (sdc *SudokuDataController) Set(patch DataPatch) {
+	sdc.set(patch.Row(), patch.Column(), patch.Number())
+}
 func (sdc *SudokuDataController) unset(row, col, num int) {
 	sdc.field[row][col] = 0
 	sdc.rowsCache[row][num] = true
@@ -91,4 +98,7 @@ func (sdc *SudokuDataController) unset(row, col, num int) {
 	}
 	sdc.countNumberCache[num] -= 1
 	sdc.countNumberCache[0] += 1
+}
+func (sdc *SudokuDataController) Unset(patch DataPatch) {
+	sdc.unset(patch.Row(), patch.Column(), patch.Number())
 }
