@@ -1,4 +1,4 @@
-package main
+package data
 
 type DataPatch interface {
 	Row() int
