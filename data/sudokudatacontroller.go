@@ -68,8 +68,12 @@ func (sdc *SudokuDataController) set(row, col, num int) {
 	sdc.columnsCache[col][num] = false
 	sdc.squareCache[(row/3)*3+col/3][num] = false
 	for i := 0; i < 9; i++ {
-		delete(sdc.positionsOfNumberCache[num], i*9+col)
-		delete(sdc.positionsOfNumberCache[num], row*9+i)
+		if i != ((row/3)*3 + i/3) {
+			delete(sdc.positionsOfNumberCache[num], i*9+col)
+		}
+		if i != ((col/3)*3 + i%3) {
+			delete(sdc.positionsOfNumberCache[num], row*9+i)
+		}
 		delete(sdc.positionsOfNumberCache[num], ((row/3)*3+i/3)*9+((col/3)*3+i%3))
 	}
 	sdc.countNumberCache[num] += 1
@@ -84,10 +88,10 @@ func (sdc *SudokuDataController) unset(row, col, num int) {
 	sdc.columnsCache[col][num] = true
 	sdc.squareCache[(row/3)*3+col/3][num] = true
 	for i := 0; i < 9; i++ {
-		if sdc.IsPossibleInstall(i, col, num) {
+		if i != ((row/3)*3+i/3) && sdc.IsPossibleInstall(i, col, num) {
 			sdc.positionsOfNumberCache[num][i*9+col] = true
 		}
-		if sdc.IsPossibleInstall(row, i, num) {
+		if i != ((col/3)*3+i%3) && sdc.IsPossibleInstall(row, i, num) {
 			sdc.positionsOfNumberCache[num][row*9+i] = true
 		}
 		if sdc.IsPossibleInstall((row/3)*3+i/3, (col/3)*3+i%3, num) {
