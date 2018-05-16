@@ -30,7 +30,6 @@ func (su *Sudoku) print(sep, end string) string {
 func (su *Sudoku) LoadFromHashStr(s string) {
 	for i := 0; i < 9; i++ {
 		for j := 0; j < 9; j++ {
-			//n, _ := strconv.Atoi(s[i*9+j : i*9+j+1])
 			n := int(s[i*9+j]) - 48
 			su.field[i][j] = n
 		}
