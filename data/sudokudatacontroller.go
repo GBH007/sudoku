@@ -18,18 +18,19 @@ type SudokuDataController struct {
 
 func NewCacheController(su *Sudoku) *SudokuDataController {
 	sdc := new(SudokuDataController)
+	sdc.Sudoku = su
 	sdc.init()
 	for row := 0; row < 9; row++ {
 		for col := 0; col < 9; col++ {
-			sdc.rowsCache[row][su.field[row][col]] = false
-			sdc.columnsCache[col][su.field[row][col]] = false
-			sdc.squareCache[(row/3)*3+col/3][su.field[row][col]] = false
+			sdc.rowsCache[row][sdc.field[row][col]] = false
+			sdc.columnsCache[col][sdc.field[row][col]] = false
+			sdc.squareCache[(row/3)*3+col/3][sdc.field[row][col]] = false
 		}
 	}
 	// находится здесь а не перенесен в верхнии циклы потому что требуется предварительный просчет других кешей
 	for row := 0; row < 9; row++ {
 		for col := 0; col < 9; col++ {
-			for num := 0; num < 10; num++ {
+			for num := 1; num < 10; num++ {
 				sdc.cubeCache[row][col][num] = sdc.IsPossibleInstall(row, col, num)
 			}
 		}
