@@ -25,6 +25,7 @@ func NewSudokuDataController(su *Sudoku) *SudokuDataController {
 			sdc.rowsCache[row][sdc.field[row][col]] = false
 			sdc.columnsCache[col][sdc.field[row][col]] = false
 			sdc.squareCache[(row/3)*3+col/3][sdc.field[row][col]] = false
+			sdc.countNumberCache[sdc.field[row][col]]++
 		}
 	}
 	// находится здесь а не перенесен в верхнии циклы потому что требуется предварительный просчет других кешей
