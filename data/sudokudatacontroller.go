@@ -16,7 +16,7 @@ type SudokuDataController struct {
 	cubeCache    [9][9][10]bool //кеш ячейки
 }
 
-func NewCacheController(su *Sudoku) *SudokuDataController {
+func NewSudokuDataController(su *Sudoku) *SudokuDataController {
 	sdc := new(SudokuDataController)
 	sdc.Sudoku = su
 	sdc.init()
