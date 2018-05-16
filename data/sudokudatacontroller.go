@@ -10,10 +10,11 @@ type SudokuDataController struct {
 	*Sudoku
 	countNumberCache [10]int //количество каждой цифры в судоку
 	// имеют значение true если туда можно поставить цифру
-	rowsCache    [9][10]bool    //кеш строк
-	columnsCache [9][10]bool    //кеш столбцов
-	squareCache  [9][10]bool    //кеш квадратов
-	cubeCache    [9][9][10]bool //кеш ячейки
+	rowsCache              [9][10]bool      //кеш строк
+	columnsCache           [9][10]bool      //кеш столбцов
+	squareCache            [9][10]bool      //кеш квадратов
+	cubeCache              [9][9][10]bool   //кеш ячейки
+	positionsOfNumberCache [10]map[int]bool //кеш позиций для цифры 0-81
 }
 
 func NewSudokuDataController(su *Sudoku) *SudokuDataController {
@@ -28,10 +29,14 @@ func NewSudokuDataController(su *Sudoku) *SudokuDataController {
 		}
 	}
 	// находится здесь а не перенесен в верхнии циклы потому что требуется предварительный просчет других кешей
+	//требуется для вызова функции IsPossibleInstall
 	for row := 0; row < 9; row++ {
 		for col := 0; col < 9; col++ {
 			for num := 1; num < 10; num++ {
 				sdc.cubeCache[row][col][num] = sdc.IsPossibleInstall(row, col, num)
+				if sdc.IsPossibleInstall(row, col, num) {
+					sdc.positionsOfNumberCache[num][row*9+col] = true
+				}
 			}
 		}
 	}
@@ -48,6 +53,9 @@ func (sdc *SudokuDataController) init() {
 				sdc.cubeCache[i][j][num] = true
 			}
 		}
+	}
+	for num := 0; num < 10; num++ {
+		sdc.positionsOfNumberCache[num] = make(map[int]bool)
 	}
 }
 func (sdc *SudokuDataController) IsPossibleInstall(row, col, num int) bool {
@@ -67,12 +75,15 @@ func (sdc *SudokuDataController) set(row, col, num int) {
 	for i := 0; i < 9; i++ {
 		if sdc.cubeCache[i][col][num] {
 			sdc.cubeCache[i][col][num] = false
+			delete(sdc.positionsOfNumberCache[num], i*9+col)
 		}
 		if sdc.cubeCache[row][i][num] {
 			sdc.cubeCache[row][i][num] = false
+			delete(sdc.positionsOfNumberCache[num], row*9+i)
 		}
 		if sdc.cubeCache[(row/3)*3+i/3][(col/3)*3+i%3][num] {
 			sdc.cubeCache[(row/3)*3+i/3][(col/3)*3+i%3][num] = false
+			delete(sdc.positionsOfNumberCache[num], ((row/3)*3+i/3)*9+((col/3)*3+i%3))
 		}
 	}
 	sdc.countNumberCache[num] += 1
@@ -89,12 +100,15 @@ func (sdc *SudokuDataController) unset(row, col, num int) {
 	for i := 0; i < 9; i++ {
 		if sdc.IsPossibleInstall(i, col, num) {
 			sdc.cubeCache[i][col][num] = true
+			sdc.positionsOfNumberCache[num][i*9+col] = true
 		}
 		if sdc.IsPossibleInstall(row, i, num) {
 			sdc.cubeCache[row][i][num] = true
+			sdc.positionsOfNumberCache[num][row*9+i] = true
 		}
 		if sdc.IsPossibleInstall((row/3)*3+i/3, (col/3)*3+i%3, num) {
 			sdc.cubeCache[(row/3)*3+i/3][(col/3)*3+i%3][num] = true
+			sdc.positionsOfNumberCache[num][((row/3)*3+i/3)*9+((col/3)*3+i%3)] = true
 		}
 	}
 	sdc.countNumberCache[num] -= 1
