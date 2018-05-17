@@ -7,7 +7,7 @@ type DataPatch interface {
 }
 
 type SudokuDataController struct {
-	*Sudoku
+	Sudoku
 	countNumberCache [10]int //количество каждой цифры в судоку
 	// имеют значение true если туда можно поставить цифру
 	rowsCache              [9][10]bool      //кеш строк
@@ -16,7 +16,7 @@ type SudokuDataController struct {
 	positionsOfNumberCache [10]map[int]bool //кеш позиций для цифры 0-81
 }
 
-func NewSudokuDataController(su *Sudoku) *SudokuDataController {
+func NewSudokuDataController(su Sudoku) *SudokuDataController {
 	sdc := new(SudokuDataController)
 	sdc.Sudoku = su
 	sdc.init()
@@ -24,6 +24,10 @@ func NewSudokuDataController(su *Sudoku) *SudokuDataController {
 }
 func (sdc *SudokuDataController) GetFreePositionForNumber(num int) map[int]bool {
 	return sdc.positionsOfNumberCache[num]
+}
+func (sdc *SudokuDataController) Load(s string) {
+	sdc.LoadFromHashStr(s)
+	sdc.init()
 }
 func (sdc *SudokuDataController) init() {
 	for i := 0; i < 9; i++ {
