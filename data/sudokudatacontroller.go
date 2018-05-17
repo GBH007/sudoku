@@ -25,6 +25,36 @@ func NewSudokuDataController(su Sudoku) *SudokuDataController {
 func (sdc *SudokuDataController) GetFreePositionForNumber(num int) map[int]bool {
 	return sdc.positionsOfNumberCache[num]
 }
+func (sdc *SudokuDataController) GetCountNumber() []int {
+	return sdc.countNumberCache[:]
+}
+func (sdc *SudokuDataController) CalculateEfficiency(patch DataPatch) int {
+	return sdc.calculateEfficiency(patch.Row(), patch.Column(), patch.Number())
+}
+func (sdc *SudokuDataController) calculateEfficiency(row, col, num int) int {
+	var res int = 0
+	for i := 0; i < 9; i++ {
+		if i != ((row/3)*3 + i/3) {
+			if _, ok := sdc.positionsOfNumberCache[num][i*9+col]; ok {
+				res += 1
+			}
+		}
+		if i != ((col/3)*3 + i%3) {
+			if _, ok := sdc.positionsOfNumberCache[num][row*9+i]; ok {
+				res += 1
+			}
+		}
+		if _, ok := sdc.positionsOfNumberCache[num][((row/3)*3+i/3)*9+((col/3)*3+i%3)]; ok {
+			res += 1
+		}
+		if i+1 != num {
+			if _, ok := sdc.positionsOfNumberCache[i+1][row*9+col]; ok {
+				res += 1
+			}
+		}
+	}
+	return res
+}
 func (sdc *SudokuDataController) Load(s string) {
 	sdc.LoadFromHashStr(s)
 	sdc.init()
