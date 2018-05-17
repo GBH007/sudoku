@@ -3,10 +3,11 @@ package strategy
 import "fmt"
 
 type Patch struct {
-	row       int
-	column    int
-	number    int
-	Efficieny int
+	row           int
+	column        int
+	number        int
+	Efficieny     int
+	StrategyNames []string
 }
 
 func NewPatch(row, col, num int) *Patch {

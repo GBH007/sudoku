@@ -23,6 +23,7 @@ func (mpc *MaxPlaceCountStrategy) GetResult() []*Patch {
 	for pos, _ := range positions {
 		patch := NewPatch(pos/9, pos%9, num)
 		patch.Efficieny = sdc.CalculateEfficiency(patch)
+		patch.StrategyNames = []string{mpc.Name()}
 		res = append(res, patch)
 	}
 	return res
