@@ -76,6 +76,9 @@ func (sdc *SudokuDataController) set(row, col, num int) {
 			delete(sdc.positionsOfNumberCache[num], row*9+i)
 		}
 		delete(sdc.positionsOfNumberCache[num], ((row/3)*3+i/3)*9+((col/3)*3+i%3))
+		if i+1 != num {
+			delete(sdc.positionsOfNumberCache[i+1], row*9+col)
+		}
 	}
 	sdc.countNumberCache[num] += 1
 	sdc.countNumberCache[0] -= 1
@@ -97,6 +100,9 @@ func (sdc *SudokuDataController) unset(row, col, num int) {
 		}
 		if sdc.IsPossibleInstall((row/3)*3+i/3, (col/3)*3+i%3, num) {
 			sdc.positionsOfNumberCache[num][((row/3)*3+i/3)*9+((col/3)*3+i%3)] = true
+		}
+		if i+1 != num && sdc.IsPossibleInstall(row, col, i+1) {
+			sdc.positionsOfNumberCache[i+1][row*9+col] = true
 		}
 	}
 	sdc.countNumberCache[num] -= 1
