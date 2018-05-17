@@ -20,6 +20,22 @@ func NewSudokuDataController(su *Sudoku) *SudokuDataController {
 	sdc := new(SudokuDataController)
 	sdc.Sudoku = su
 	sdc.init()
+	return sdc
+}
+func (sdc *SudokuDataController) GetFreePositionForNumber(num int) map[int]bool {
+	return sdc.positionsOfNumberCache[num]
+}
+func (sdc *SudokuDataController) init() {
+	for i := 0; i < 9; i++ {
+		for num := 0; num < 10; num++ {
+			sdc.rowsCache[i][num] = true
+			sdc.columnsCache[i][num] = true
+			sdc.squareCache[i][num] = true
+		}
+	}
+	for num := 0; num < 10; num++ {
+		sdc.positionsOfNumberCache[num] = make(map[int]bool)
+	}
 	for row := 0; row < 9; row++ {
 		for col := 0; col < 9; col++ {
 			sdc.rowsCache[row][sdc.field[row][col]] = false
@@ -38,20 +54,6 @@ func NewSudokuDataController(su *Sudoku) *SudokuDataController {
 				}
 			}
 		}
-	}
-	return sdc
-}
-
-func (sdc *SudokuDataController) init() {
-	for i := 0; i < 9; i++ {
-		for num := 0; num < 10; num++ {
-			sdc.rowsCache[i][num] = true
-			sdc.columnsCache[i][num] = true
-			sdc.squareCache[i][num] = true
-		}
-	}
-	for num := 0; num < 10; num++ {
-		sdc.positionsOfNumberCache[num] = make(map[int]bool)
 	}
 }
 func (sdc *SudokuDataController) IsPossibleInstall(row, col, num int) bool {
