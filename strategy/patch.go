@@ -20,3 +20,13 @@ func (p *Patch) Number() int { return p.number }
 func (p *Patch) String() string {
 	return fmt.Sprintf("%d %d : %d -> %d", p.row, p.column, p.number, p.Efficieny)
 }
+func (p *Patch) GetUUID() int {
+	return p.column + p.row*9 + p.number*100
+}
+
+type PatchList []*Patch
+
+//по умолчанию сортирует в порядке неувеличения эффективности
+func (pl PatchList) Len() int           { return len(pl) }
+func (pl PatchList) Less(i, j int) bool { return pl[i].Efficieny > pl[j].Efficieny }
+func (pl PatchList) Swap(i, j int)      { pl[i], pl[j] = pl[j], pl[i] }

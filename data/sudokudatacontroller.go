@@ -147,3 +147,9 @@ func (sdc *SudokuDataController) unset(row, col, num int) {
 func (sdc *SudokuDataController) Unset(patch DataPatch) {
 	sdc.unset(patch.Row(), patch.Column(), patch.Number())
 }
+func (sdc *SudokuDataController) IsSolved() bool {
+	if sdc.countNumberCache[0] == 0 {
+		return true
+	}
+	return false
+}
