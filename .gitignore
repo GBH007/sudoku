@@ -1,3 +1,5 @@
 *.pyc
 old/*
 sudoku
+main
+*.log

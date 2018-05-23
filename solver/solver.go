@@ -24,6 +24,7 @@ func (slr *Solver) preparePatchList(patchList strategy.PatchList) strategy.Patch
 		}
 		if patch.GetUUID() == lastPatch.GetUUID() {
 			lastPatch.StrategyNames = append(lastPatch.StrategyNames, patch.StrategyNames...)
+			//lastPatch.Efficieny += patch.Efficieny
 		} else {
 			pl = append(pl, patch)
 			lastPatch = patch
@@ -36,7 +37,11 @@ func (slr *Solver) getNewPatchList() strategy.PatchList {
 	for _, st := range slr.strategyList {
 		pl = append(pl, st.GetResult()...)
 	}
-	return slr.preparePatchList(pl)
+	pl = slr.preparePatchList(pl)
+	/*if len(pl) > 3 {
+		pl = pl[:3]
+	}*/
+	return pl
 }
 func (slr *Solver) AddStrategy(st strategy.Strategy) {
 	slr.strategyList = append(slr.strategyList, st)

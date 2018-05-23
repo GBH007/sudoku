@@ -1,14 +1,18 @@
 package data
 
+import "log"
+
 type DataPatch interface {
 	Row() int
 	Column() int
 	Number() int
+	ToLog() string
 }
 
 type SudokuDataController struct {
 	Sudoku
 	countNumberCache [10]int //количество каждой цифры в судоку
+	countCellVar     [81]int //количество элементов которые можно разместить в ячейку
 	// имеют значение true если туда можно поставить цифру
 	rowsCache              [9][10]bool      //кеш строк
 	columnsCache           [9][10]bool      //кеш столбцов
@@ -28,6 +32,9 @@ func (sdc *SudokuDataController) GetFreePositionForNumber(num int) map[int]bool 
 func (sdc *SudokuDataController) GetCountNumber() []int {
 	return sdc.countNumberCache[:]
 }
+func (sdc *SudokuDataController) GetCountCell() []int {
+	return sdc.countCellVar[:]
+}
 func (sdc *SudokuDataController) CalculateEfficiency(patch DataPatch) int {
 	return sdc.calculateEfficiency(patch.Row(), patch.Column(), patch.Number())
 }
@@ -36,20 +43,20 @@ func (sdc *SudokuDataController) calculateEfficiency(row, col, num int) int {
 	for i := 0; i < 9; i++ {
 		if i != ((row/3)*3 + i/3) {
 			if _, ok := sdc.positionsOfNumberCache[num][i*9+col]; ok {
-				res += 1
+				res++
 			}
 		}
 		if i != ((col/3)*3 + i%3) {
 			if _, ok := sdc.positionsOfNumberCache[num][row*9+i]; ok {
-				res += 1
+				res++
 			}
 		}
 		if _, ok := sdc.positionsOfNumberCache[num][((row/3)*3+i/3)*9+((col/3)*3+i%3)]; ok {
-			res += 1
+			res++
 		}
 		if i+1 != num {
 			if _, ok := sdc.positionsOfNumberCache[i+1][row*9+col]; ok {
-				res += 1
+				res++
 			}
 		}
 	}
@@ -69,6 +76,7 @@ func (sdc *SudokuDataController) init() {
 	}
 	for num := 0; num < 10; num++ {
 		sdc.positionsOfNumberCache[num] = make(map[int]bool)
+		sdc.countNumberCache[num] = 0
 	}
 	for row := 0; row < 9; row++ {
 		for col := 0; col < 9; col++ {
@@ -76,6 +84,7 @@ func (sdc *SudokuDataController) init() {
 			sdc.columnsCache[col][sdc.field[row][col]] = false
 			sdc.squareCache[(row/3)*3+col/3][sdc.field[row][col]] = false
 			sdc.countNumberCache[sdc.field[row][col]]++
+			sdc.countCellVar[row*9+col] = 0
 		}
 	}
 	// находится здесь а не перенесен в верхнии циклы потому что требуется предварительный просчет других кешей
@@ -85,6 +94,7 @@ func (sdc *SudokuDataController) init() {
 			for num := 1; num < 10; num++ {
 				if sdc.IsPossibleInstall(row, col, num) {
 					sdc.positionsOfNumberCache[num][row*9+col] = true
+					sdc.countCellVar[row*9+col]++
 				}
 			}
 		}
@@ -106,20 +116,40 @@ func (sdc *SudokuDataController) set(row, col, num int) {
 	sdc.squareCache[(row/3)*3+col/3][num] = false
 	for i := 0; i < 9; i++ {
 		if i != ((row/3)*3 + i/3) {
-			delete(sdc.positionsOfNumberCache[num], i*9+col)
+			if _, ok := sdc.positionsOfNumberCache[num][i*9+col]; ok {
+				delete(sdc.positionsOfNumberCache[num], i*9+col)
+				sdc.countCellVar[i*9+col]--
+			}
 		}
 		if i != ((col/3)*3 + i%3) {
-			delete(sdc.positionsOfNumberCache[num], row*9+i)
+			if _, ok := sdc.positionsOfNumberCache[num][row*9+i]; ok {
+				delete(sdc.positionsOfNumberCache[num], row*9+i)
+				sdc.countCellVar[row*9+i]--
+			}
 		}
-		delete(sdc.positionsOfNumberCache[num], ((row/3)*3+i/3)*9+((col/3)*3+i%3))
+		if _, ok := sdc.positionsOfNumberCache[num][((row/3)*3+i/3)*9+((col/3)*3+i%3)]; ok {
+			delete(sdc.positionsOfNumberCache[num], ((row/3)*3+i/3)*9+((col/3)*3+i%3))
+			sdc.countCellVar[((row/3)*3+i/3)*9+((col/3)*3+i%3)]--
+		}
 		if i+1 != num {
-			delete(sdc.positionsOfNumberCache[i+1], row*9+col)
+			if _, ok := sdc.positionsOfNumberCache[i+1][row*9+col]; ok {
+				delete(sdc.positionsOfNumberCache[i+1], row*9+col)
+				sdc.countCellVar[row*9+col]--
+			}
 		}
 	}
-	sdc.countNumberCache[num] += 1
-	sdc.countNumberCache[0] -= 1
+	sdc.countNumberCache[num]++
+	sdc.countNumberCache[0]--
 }
 func (sdc *SudokuDataController) Set(patch DataPatch) {
+	log.Println("set", patch.ToLog())
+	log.Println(sdc.field)
+	log.Println(sdc.rowsCache)
+	log.Println(sdc.columnsCache)
+	log.Println(sdc.squareCache)
+	log.Println(sdc.positionsOfNumberCache)
+	log.Println(sdc.countCellVar)
+	log.Println(sdc.countNumberCache)
 	sdc.set(patch.Row(), patch.Column(), patch.Number())
 }
 func (sdc *SudokuDataController) unset(row, col, num int) {
@@ -130,21 +160,33 @@ func (sdc *SudokuDataController) unset(row, col, num int) {
 	for i := 0; i < 9; i++ {
 		if i != ((row/3)*3+i/3) && sdc.IsPossibleInstall(i, col, num) {
 			sdc.positionsOfNumberCache[num][i*9+col] = true
+			sdc.countCellVar[i*9+col]++
 		}
 		if i != ((col/3)*3+i%3) && sdc.IsPossibleInstall(row, i, num) {
 			sdc.positionsOfNumberCache[num][row*9+i] = true
+			sdc.countCellVar[row*9+i]++
 		}
 		if sdc.IsPossibleInstall((row/3)*3+i/3, (col/3)*3+i%3, num) {
 			sdc.positionsOfNumberCache[num][((row/3)*3+i/3)*9+((col/3)*3+i%3)] = true
+			sdc.countCellVar[((row/3)*3+i/3)*9+((col/3)*3+i%3)]++
 		}
 		if i+1 != num && sdc.IsPossibleInstall(row, col, i+1) {
 			sdc.positionsOfNumberCache[i+1][row*9+col] = true
+			sdc.countCellVar[row*9+col]++
 		}
 	}
-	sdc.countNumberCache[num] -= 1
-	sdc.countNumberCache[0] += 1
+	sdc.countNumberCache[num]--
+	sdc.countNumberCache[0]++
 }
 func (sdc *SudokuDataController) Unset(patch DataPatch) {
+	log.Println("unset", patch.ToLog())
+	log.Println(sdc.field)
+	log.Println(sdc.rowsCache)
+	log.Println(sdc.columnsCache)
+	log.Println(sdc.squareCache)
+	log.Println(sdc.positionsOfNumberCache)
+	log.Println(sdc.countCellVar)
+	log.Println(sdc.countNumberCache)
 	sdc.unset(patch.Row(), patch.Column(), patch.Number())
 }
 func (sdc *SudokuDataController) IsSolved() bool {
